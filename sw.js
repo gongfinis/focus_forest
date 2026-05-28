@@ -1,52 +1,95 @@
-// Service Worker - 专注森林 PWA 离线缓存
-const CACHE_NAME = 'focus-forest-v2';
+// Service Worker - 专注森林 PWA 离线缓存 v3
+const CACHE_NAME = 'focus-forest-v3';
+
 const ASSETS = [
-  '/index.html',
-  '/manifest.json',
-  '/icon-192.png',
-  '/icon-512.png'
+  './',
+  './index.html',
+  './manifest.json',
+  './icon.png',
+  './icon-192.png',
+  './icon-512.png'
 ];
 
-// Install - cache core assets
 self.addEventListener('install', event => {
+  console.log('SW: Installing...');
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(ASSETS).catch(err => {
-        console.warn('SW: some assets failed to cache', err);
-      });
-    })
+    caches.open(CACHE_NAME)
+      .then(cache => {
+        console.log('SW: Caching assets');
+        return cache.addAll(ASSETS);
+      })
+      .then(() => {
+        console.log('SW: All assets cached');
+        return self.skipWaiting();
+      })
+      .catch(err => {
+        console.error('SW: Cache failed', err);
+      })
   );
-  self.skipWaiting();
 });
 
-// Activate - clean old caches
 self.addEventListener('activate', event => {
+  console.log('SW: Activating...');
   event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
-    )
-  );
-  self.clients.claim();
-});
-
-// Fetch - cache first, then network
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request).then(cached => {
-      if (cached) return cached;
-      return fetch(event.request).then(response => {
-        // Cache successful GET requests
-        if (response.ok && event.request.method === 'GET') {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-        }
-        return response;
-      }).catch(() => {
-        // Offline fallback for navigation
-        if (event.request.mode === 'navigate') {
-          return caches.match('/index.html');
-        }
-      });
+    caches.keys().then(keys => {
+      return Promise.all(
+        keys
+          .filter(key => key !== CACHE_NAME)
+          .map(key => {
+            console.log('SW: Deleting old cache:', key);
+            return caches.delete(key);
+          })
+      );
+    }).then(() => {
+      console.log('SW: Claiming clients');
+      return self.clients.claim();
     })
   );
+});
+
+self.addEventListener('fetch', event => {
+  const { request } = event;
+  
+  if (request.method !== 'GET') {
+    return;
+  }
+
+  if (request.url.includes('chrome-extension')) {
+    return;
+  }
+
+  event.respondWith(
+    caches.match(request)
+      .then(cached => {
+        if (cached) {
+          return cached;
+        }
+
+        return fetch(request)
+          .then(response => {
+            if (!response || response.status !== 200 || response.type !== 'basic') {
+              return response;
+            }
+
+            const responseToCache = response.clone();
+            
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(request, responseToCache);
+            });
+
+            return response;
+          })
+          .catch(() => {
+            if (request.mode === 'navigate') {
+              return caches.match('./index.html');
+            }
+          });
+      })
+  );
+});
+
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
