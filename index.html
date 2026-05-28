@@ -1,0 +1,2462 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<title>专注森林 - Focus Forest</title>
+<meta name="theme-color" content="#154212">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="专注森林">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+/* ========== Root & Variables ========== */
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --surface:#fbf9f5;
+  --surface-dim:#dbdad6;
+  --surface-container-low:#f5f3ef;
+  --surface-container:#efeeea;
+  --surface-container-high:#eae8e4;
+  --surface-container-highest:#e4e2de;
+  --on-surface:#1b1c1a;
+  --on-surface-variant:#42493e;
+  --outline:#72796e;
+  --outline-variant:#c2c9bb;
+  --primary:#154212;
+  --primary-container:#2d5a27;
+  --on-primary:#ffffff;
+  --inverse-primary:#a1d494;
+  --secondary:#725a39;
+  --secondary-container:#fbdbb0;
+  --on-secondary-container:#584324;
+  --tertiary:#5b2a36;
+  --tertiary-container:#ffd9df;
+  --error:#ba1a1a;
+  --error-container:#ffdad6;
+  --gold:#c89f18;
+  --green-light:#a1d494;
+  --green-mid:#4a9e4f;
+  --green-dark:#2d8a3e;
+  --brown:#8B7355;
+  --brown-dark:#6b5435;
+  --radius-sm:0.5rem;
+  --radius:1rem;
+  --radius-md:1.5rem;
+  --radius-lg:2rem;
+  --radius-xl:3rem;
+  --radius-full:9999px;
+  --shadow-1:0 1px 3px rgba(139,115,85,0.1),0 1px 2px rgba(139,115,85,0.06);
+  --shadow-2:0 4px 12px rgba(139,115,85,0.1),0 2px 4px rgba(139,115,85,0.06);
+  --shadow-3:0 8px 24px rgba(139,115,85,0.12),0 4px 8px rgba(139,115,85,0.06);
+  --shadow-btn:0 3px 8px rgba(21,66,18,0.2),0 1px 3px rgba(21,66,18,0.12);
+  --shadow-btn-active:0 1px 3px rgba(21,66,18,0.15);
+  --font-serif:'Noto Serif SC','Noto Serif','Songti SC','STSong','SimSun',serif;
+  --font-sans:'Plus Jakarta Sans','PingFang SC','Microsoft YaHei','Segoe UI',sans-serif;
+}
+
+html,body{
+  height:100%;overflow:hidden;
+  font-family:var(--font-sans);
+  background:var(--surface);
+  color:var(--on-surface);
+  -webkit-font-smoothing:antialiased;
+}
+
+body{
+  display:flex;flex-direction:column;
+  padding-top:36px;
+}
+
+/* ========== Titlebar ========== */
+.titlebar{
+  position:fixed;top:0;left:0;right:0;height:36px;
+  background:var(--surface-container);
+  display:none;z-index:100;
+  -webkit-app-region:drag;align-items:center;
+  justify-content:space-between;padding:0 8px;
+  border-bottom:1px solid var(--outline-variant);
+}
+.titlebar.visible{display:flex}
+.titlebar-title{
+  font-family:var(--font-serif);font-size:13px;
+  color:var(--on-surface-variant);margin-left:8px;font-weight:600;
+}
+.titlebar-btns{display:flex;gap:0;-webkit-app-region:no-drag}
+.titlebar-btn{
+  width:36px;height:36px;border:none;background:transparent;
+  color:var(--on-surface-variant);font-size:14px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .15s;border-radius:8px;
+}
+.titlebar-btn:hover{background:var(--surface-container-high)}
+.titlebar-btn.close:hover{background:var(--error-container);color:var(--error)}
+
+/* ========== Content Area ========== */
+.content-area{
+  flex:1;overflow-y:auto;overflow-x:hidden;
+  padding:16px 20px 80px;
+  scroll-behavior:smooth;
+}
+.content-area::-webkit-scrollbar{width:4px}
+.content-area::-webkit-scrollbar-thumb{
+  background:var(--outline-variant);border-radius:4px;
+}
+
+.page{display:none;animation:fadeIn .3s ease}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ========== Bottom Navigation ========== */
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;height:64px;
+  background:var(--surface-container);
+  border-top:1px solid var(--outline-variant);
+  display:flex;justify-content:space-around;align-items:center;
+  z-index:50;padding-bottom:env(safe-area-inset-bottom);
+}
+.nav-item{
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  cursor:pointer;padding:6px 16px;border-radius:var(--radius-full);
+  transition:all .2s;color:var(--on-surface-variant);
+  background:transparent;border:none;font-size:11px;font-weight:600;
+  letter-spacing:0.02em;
+}
+.nav-item:hover{background:var(--surface-container-high)}
+.nav-item.active{color:var(--primary);background:rgba(21,66,18,0.08)}
+.nav-item svg{width:22px;height:22px;fill:currentColor}
+
+/* ========== Timer Page ========== */
+.mode-label{
+  text-align:center;font-family:var(--font-serif);
+  font-size:13px;color:var(--on-surface-variant);
+  letter-spacing:4px;text-transform:uppercase;
+  margin-bottom:8px;font-weight:600;
+}
+.mode-label.focus{color:var(--primary)}
+.mode-label.break{color:var(--tertiary)}
+
+/* Growing Plant + Ring Container */
+.timer-ring-wrap{
+  position:relative;width:220px;height:220px;margin:8px auto 0;
+}
+.timer-ring-svg{
+  width:100%;height:100%;transform:rotate(-90deg);
+}
+.ring-bg{fill:none;stroke:var(--surface-container-highest);stroke-width:6}
+.ring-progress{
+  fill:none;stroke-width:6;stroke-linecap:round;
+  transition:stroke-dashoffset .5s linear;
+}
+.ring-progress.focus{stroke:var(--primary)}
+.ring-progress.break{stroke:var(--tertiary)}
+
+/* Growing plant inside ring */
+.growing-plant{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-45%);
+  width:120px;height:120px;
+  display:flex;align-items:flex-end;justify-content:center;
+  pointer-events:none;
+}
+.growing-plant svg{
+  width:100%;height:100%;
+  transition:all .8s ease;
+}
+.growing-plant .plant-element{
+  transition:all .8s ease;transform-origin:bottom center;
+}
+
+/* Timer display below ring */
+.timer-display{
+  text-align:center;margin-top:12px;
+}
+.timer-time{
+  font-family:var(--font-serif);font-size:44px;
+  font-weight:700;color:var(--on-surface);
+  letter-spacing:2px;line-height:1;
+}
+.timer-sub{
+  font-size:12px;color:var(--on-surface-variant);
+  margin-top:4px;letter-spacing:1px;
+}
+
+/* Controls */
+.controls{
+  display:flex;gap:8px;justify-content:center;
+  margin-top:16px;align-items:center;
+}
+.btn{
+  padding:10px 24px;border:none;border-radius:var(--radius-full);
+  cursor:pointer;font-size:14px;font-weight:600;
+  transition:all .15s;font-family:var(--font-sans);
+  letter-spacing:0.02em;
+}
+.btn:active{transform:scale(.96)}
+.btn-primary{
+  background:var(--primary);color:var(--on-primary);
+  box-shadow:var(--shadow-btn);
+}
+.btn-primary:hover{background:#1a5515;box-shadow:var(--shadow-btn)}
+.btn-primary:active{box-shadow:var(--shadow-btn-active)}
+.btn-break{
+  background:var(--tertiary);color:var(--on-primary);
+  box-shadow:var(--shadow-btn);
+}
+.btn-secondary{
+  background:var(--surface-container-high);color:var(--on-surface-variant);
+  box-shadow:var(--shadow-1);
+}
+.btn-secondary:hover{background:var(--surface-container-highest)}
+.btn-danger{
+  background:transparent;color:var(--error);
+  border:1px solid var(--error);font-size:12px;
+  padding:6px 14px;
+}
+.btn-danger:hover{background:var(--error-container)}
+.btn-sm{padding:6px 14px;font-size:12px}
+
+/* Seed selector button */
+.seed-selector{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  margin-top:16px;padding:10px 20px;
+  background:var(--surface-container-low);
+  border:1.5px dashed var(--outline-variant);
+  border-radius:var(--radius-lg);cursor:pointer;
+  transition:all .2s;
+}
+.seed-selector:hover{
+  border-color:var(--primary);background:rgba(21,66,18,0.04);
+}
+.seed-selector svg{width:28px;height:28px}
+.seed-selector-text{
+  font-size:13px;color:var(--on-surface-variant);font-weight:500;
+}
+.seed-selector-name{
+  color:var(--primary);font-weight:600;
+}
+.session-info{
+  text-align:center;font-size:12px;color:var(--on-surface-variant);
+  margin-top:10px;
+}
+
+/* Settings */
+.settings-toggle{
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  margin-top:14px;padding:6px;cursor:pointer;
+  color:var(--outline);font-size:12px;
+  transition:color .2s;border:none;background:none;
+  font-family:var(--font-sans);
+}
+.settings-toggle:hover{color:var(--on-surface-variant)}
+.settings-toggle svg{width:16px;height:16px;fill:currentColor;
+  transition:transform .3s;
+}
+.settings-toggle.open svg{transform:rotate(180deg)}
+
+.settings-panel{
+  max-height:0;overflow:hidden;
+  transition:max-height .3s ease;
+  margin-top:8px;
+}
+.settings-panel.open{max-height:200px}
+
+.settings-card{
+  background:var(--surface-container-low);
+  border-radius:var(--radius);padding:12px 16px;
+  border:1px solid var(--outline-variant);
+}
+.setting-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 0;border-bottom:1px solid var(--outline-variant);
+}
+.setting-row:last-child{border:none}
+.setting-label{font-size:13px;color:var(--on-surface-variant)}
+.setting-input{
+  background:var(--surface);border:1px solid var(--outline-variant);
+  color:var(--on-surface);border-radius:var(--radius-sm);
+  padding:4px 8px;width:56px;text-align:center;font-size:14px;
+  font-family:var(--font-sans);
+}
+.setting-input:focus{outline:none;border-color:var(--primary)}
+.toggle-wrap{
+  font-size:13px;color:var(--on-surface-variant);cursor:pointer;
+  display:flex;align-items:center;gap:6px;
+}
+.toggle-wrap input{accent-color:var(--primary)}
+
+/* ========== Land Page ========== */
+.land-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:12px;
+}
+.land-title{
+  font-family:var(--font-serif);font-size:18px;font-weight:700;
+  color:var(--on-surface);
+}
+.view-switcher{
+  display:flex;background:var(--surface-container);
+  border-radius:var(--radius-full);padding:2px;
+  border:1px solid var(--outline-variant);
+}
+.view-btn{
+  padding:5px 14px;border:none;border-radius:var(--radius-full);
+  font-size:12px;font-weight:600;cursor:pointer;
+  transition:all .2s;background:transparent;
+  color:var(--on-surface-variant);font-family:var(--font-sans);
+}
+.view-btn.active{
+  background:var(--primary);color:var(--on-primary);
+  box-shadow:var(--shadow-1);
+}
+
+/* Day View - 2.5D Isometric */
+.day-view{display:block}
+.day-date{
+  font-size:13px;color:var(--on-surface-variant);
+  text-align:center;margin-bottom:6px;font-weight:500;
+}
+.iso-land-wrap{
+  perspective:900px;
+  perspective-origin:50% 28%;
+  display:flex;justify-content:center;
+  padding:20px 10px 30px;
+  position:relative;
+  overflow:visible;
+}
+.iso-land-wrap::before{
+  content:'';position:absolute;
+  bottom:5px;left:8%;right:8%;height:30px;
+  background:radial-gradient(ellipse,rgba(139,115,85,0.13) 0%,transparent 70%);
+  filter:blur(10px);pointer-events:none;
+}
+.iso-land-wrap::after{
+  content:'';position:absolute;
+  top:0;left:5%;right:5%;height:50px;
+  background:linear-gradient(to bottom,var(--surface) 0%,rgba(251,249,245,0.6) 40%,transparent 100%);
+  pointer-events:none;z-index:10;border-radius:var(--radius-lg);
+}
+.land-grid{
+  display:grid;grid-template-columns:repeat(6,56px);gap:4px;
+  transform:rotateX(55deg);
+  transform-style:preserve-3d;
+  position:relative;
+  padding:22px;
+  border-radius:16px;
+  background:
+    radial-gradient(ellipse at 25% 15%,rgba(161,212,148,0.12) 0%,transparent 40%),
+    radial-gradient(ellipse at 75% 75%,rgba(161,212,148,0.07) 0%,transparent 30%),
+    radial-gradient(ellipse at 50% 50%,rgba(200,180,140,0.3) 0%,transparent 60%),
+    linear-gradient(135deg,#d8ceae 0%,#c8be9e 50%,#bfb590 100%);
+  box-shadow:
+    0 20px 50px rgba(139,115,85,0.22),
+    0 8px 16px rgba(139,115,85,0.1),
+    inset 0 1px 2px rgba(255,255,255,0.4),
+    inset 0 -2px 8px rgba(139,115,85,0.08);
+  border:2px solid rgba(139,115,85,0.18);
+}
+.land-grid::before{
+  content:'';position:absolute;inset:0;
+  border-radius:14px;
+  background:
+    repeating-conic-gradient(rgba(0,0,0,.012) 0% 25%,transparent 0% 50%) 0 0/16px 16px,
+    radial-gradient(circle at 20% 40%,rgba(161,212,148,0.06) 0%,transparent 8%),
+    radial-gradient(circle at 60% 20%,rgba(161,212,148,0.04) 0%,transparent 6%),
+    radial-gradient(circle at 80% 65%,rgba(161,212,148,0.05) 0%,transparent 7%);
+  pointer-events:none;z-index:0;
+}
+.land-cell{
+  width:56px;height:56px;
+  position:relative;
+  transform-style:preserve-3d;
+  border-radius:5px;
+  background:linear-gradient(145deg,#e2d8be,#d8ccae);
+  border:1px solid rgba(139,115,85,0.1);
+  box-shadow:
+    0 5px 0 0 #c0b090,
+    0 6px 0 0 #b0a080,
+    0 8px 10px rgba(0,0,0,0.08);
+  transition:all .25s ease;
+}
+.land-cell:hover{
+  transform:translateZ(5px);
+  box-shadow:
+    0 10px 0 0 #c0b090,
+    0 11px 0 0 #b0a080,
+    0 14px 20px rgba(0,0,0,0.12);
+}
+.land-cell.has-tree{
+  background:linear-gradient(145deg,#dce6ce,#d2dcc2);
+  border-color:rgba(74,158,79,0.12);
+  box-shadow:
+    0 5px 0 0 #b0c098,
+    0 6px 0 0 #a0b088,
+    0 8px 10px rgba(0,0,0,0.08);
+}
+.land-cell.has-tree:hover{
+  box-shadow:
+    0 10px 0 0 #b0c098,
+    0 11px 0 0 #a0b088,
+    0 14px 20px rgba(0,0,0,0.12);
+}
+.land-cell.empty{
+  background:linear-gradient(145deg,#ddd3b5,#d5cba8);
+  box-shadow:
+    0 4px 0 0 #c0b090,
+    0 5px 0 0 #b0a080,
+    0 6px 8px rgba(0,0,0,0.05);
+}
+.land-cell.dead{
+  background:linear-gradient(145deg,#d5cfc0,#ccc5b5);
+  border-color:rgba(139,115,85,0.15);
+  box-shadow:
+    0 5px 0 0 #b0a898,
+    0 6px 0 0 #a09888,
+    0 8px 10px rgba(0,0,0,0.08);
+}
+/* Tree on tile - counter-rotated to stand upright */
+.tree-on-cell{
+  position:absolute;
+  left:-15%;right:-15%;bottom:0;height:250%;
+  display:flex;align-items:flex-end;justify-content:center;
+  transform:rotateX(-55deg);
+  transform-origin:bottom center;
+  z-index:2;pointer-events:none;
+}
+/* Tree ground shadow on tile surface */
+.tree-ground-shadow{
+  position:absolute;
+  bottom:8px;left:50%;
+  transform:translateX(-50%);
+  width:28px;height:8px;
+  background:rgba(0,0,0,0.07);
+  border-radius:50%;
+  filter:blur(2px);
+  z-index:1;pointer-events:none;
+}
+.tree-on-cell svg{
+  width:80%;height:45%;
+  filter:drop-shadow(1px 3px 4px rgba(0,0,0,0.2));
+  transition:transform .3s ease;
+}
+.land-cell:hover .tree-on-cell svg{transform:scale(1.08)}
+.land-cell.dead .tree-on-cell svg{
+  filter:saturate(0.3) brightness(0.8) drop-shadow(1px 2px 3px rgba(0,0,0,0.15));
+}
+.land-cell.dead .tree-ground-shadow{opacity:.5}
+/* Small grass dots on empty tiles */
+.cell-grass-dot{
+  position:absolute;
+  width:2px;height:5px;
+  background:#8cb870;
+  border-radius:0 0 1px 1px;
+  z-index:1;opacity:.35;
+  animation:grassGrow 2s ease-out forwards;
+  transform-origin:bottom center;
+}
+@keyframes grassGrow{0%{transform:scaleY(0)}100%{transform:scaleY(1)}}
+/* Fence decoration around the land */
+.land-fence{
+  position:absolute;
+  border:3px solid rgba(139,115,85,0.2);
+  border-radius:18px;
+  pointer-events:none;
+  box-shadow:
+    inset 0 0 0 1px rgba(200,180,140,0.3),
+    0 0 0 1px rgba(139,115,85,0.08);
+}
+.tree-sway{animation:treeSway 4s ease-in-out infinite;transform-origin:bottom center}
+.tree-pop{animation:treePop .6s cubic-bezier(.34,1.56,.64,1) forwards;transform-origin:bottom center}
+@keyframes treeSway{0%,100%{transform:rotate(-1.2deg)}50%{transform:rotate(1.2deg)}}
+@keyframes treePop{0%{transform:scaleY(0) scaleX(0.5);opacity:0}60%{transform:scaleY(1.15) scaleX(1.05)}100%{transform:scaleY(1) scaleX(1);opacity:1}}
+/* Floating ambient particles */
+.land-particles{
+  position:absolute;
+  inset:-20px;
+  pointer-events:none;
+  z-index:15;
+  overflow:visible;
+}
+.land-particle{
+  position:absolute;
+  border-radius:50%;
+  opacity:0;
+  animation:particleDrift 6s ease-in-out infinite;
+}
+@keyframes particleDrift{
+  0%{transform:translate(0,0) scale(0);opacity:0}
+  20%{opacity:.6}
+  80%{opacity:.4}
+  100%{transform:translate(var(--dx),var(--dy)) scale(1);opacity:0}
+}
+/* Leaf particle */
+.leaf-particle{
+  width:4px;height:6px;
+  border-radius:50% 0 50% 0;
+  transform-origin:center;
+}
+/* Sparkle particle */
+.sparkle-particle{
+  width:3px;height:3px;
+  background:#f5e6b8;
+  box-shadow:0 0 3px rgba(245,230,184,0.5);
+}
+.day-summary{
+  text-align:center;margin-top:8px;
+  font-size:12px;color:var(--on-surface-variant);
+}
+.day-summary strong{color:var(--primary);font-weight:600}
+
+/* Month View - 2.5D Land */
+.month-view{display:none}
+.month-nav{
+  display:flex;align-items:center;justify-content:center;gap:16px;
+  margin-bottom:12px;
+}
+.month-nav-btn{
+  width:32px;height:32px;border:none;border-radius:var(--radius-full);
+  background:var(--surface-container-high);color:var(--on-surface-variant);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .2s;font-size:16px;
+}
+.month-nav-btn:hover{background:var(--surface-container-highest)}
+.month-label{
+  font-family:var(--font-serif);font-size:16px;font-weight:600;
+  color:var(--on-surface);
+}
+.month-weekdays{
+  display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px;
+}
+.weekday-label{
+  text-align:center;font-size:10px;color:var(--outline);
+  font-weight:600;letter-spacing:0.5px;
+}
+/* 2.5D month land container */
+.month-land-wrap{
+  perspective:600px;
+  perspective-origin:50% 30%;
+  display:flex;justify-content:center;
+  padding:10px 4px 16px;
+  position:relative;
+  overflow:visible;
+}
+.month-land-wrap::before{
+  content:'';position:absolute;
+  bottom:0;left:10%;right:10%;height:20px;
+  background:radial-gradient(ellipse,rgba(139,115,85,0.1) 0%,transparent 70%);
+  filter:blur(8px);pointer-events:none;
+}
+.month-land-wrap::after{
+  content:'';position:absolute;
+  top:0;left:3%;right:3%;height:30px;
+  background:linear-gradient(to bottom,var(--surface) 0%,rgba(251,249,245,0.5) 50%,transparent 100%);
+  pointer-events:none;z-index:10;
+}
+.month-grid{
+  display:grid;grid-template-columns:repeat(7,44px);gap:3px;
+  transform:rotateX(50deg);
+  transform-style:preserve-3d;
+  position:relative;
+  padding:14px;
+  border-radius:12px;
+  background:
+    radial-gradient(ellipse at 30% 20%,rgba(161,212,148,0.08) 0%,transparent 40%),
+    linear-gradient(135deg,#ddd3b5 0%,#cfc5a5 50%,#c5bb95 100%);
+  box-shadow:
+    0 14px 36px rgba(139,115,85,0.18),
+    0 4px 10px rgba(139,115,85,0.08),
+    inset 0 1px 2px rgba(255,255,255,0.3);
+  border:1.5px solid rgba(139,115,85,0.15);
+}
+.month-grid::before{
+  content:'';position:absolute;inset:0;
+  border-radius:11px;
+  background:repeating-conic-gradient(rgba(0,0,0,.01) 0% 25%,transparent 0% 50%) 0 0/12px 12px;
+  pointer-events:none;z-index:0;
+}
+.month-cell{
+  width:44px;height:44px;
+  position:relative;
+  transform-style:preserve-3d;
+  border-radius:4px;
+  background:linear-gradient(145deg,#ddd3b5,#d5cba8);
+  border:1px solid rgba(139,115,85,0.08);
+  box-shadow:
+    0 3px 0 0 #c0b090,
+    0 4px 0 0 #b0a080,
+    0 5px 8px rgba(0,0,0,0.05);
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s ease;
+  cursor:default;
+}
+.month-cell:hover{
+  transform:translateZ(3px);
+  box-shadow:
+    0 6px 0 0 #c0b090,
+    0 7px 0 0 #b0a080,
+    0 10px 14px rgba(0,0,0,0.08);
+}
+.month-cell.empty-cell{
+  background:transparent;
+  box-shadow:none;border:none;
+  transform:none;
+}
+.month-cell.empty-cell:hover{transform:none;box-shadow:none}
+.month-cell.today{
+  border:1.5px solid var(--primary);
+}
+.month-cell.today .cell-date{color:var(--primary);font-weight:700}
+.month-cell .cell-date{
+  position:absolute;top:2px;left:4px;
+  font-size:8px;color:rgba(139,115,85,0.5);
+  font-weight:500;z-index:3;
+  line-height:1;
+}
+/* Tree on month cell */
+.month-tree-on-cell{
+  position:absolute;
+  left:-10%;right:-10%;bottom:0;height:220%;
+  display:flex;align-items:flex-end;justify-content:center;
+  transform:rotateX(-50deg);
+  transform-origin:bottom center;
+  z-index:2;pointer-events:none;
+}
+.month-tree-on-cell svg{
+  width:75%;height:40%;
+  filter:drop-shadow(0.5px 2px 3px rgba(0,0,0,0.15));
+  transition:transform .2s;
+}
+.month-cell:hover .month-tree-on-cell svg{transform:scale(1.06)}
+/* Month cell with trees - green tint */
+.month-cell.has-trees{
+  background:linear-gradient(145deg,#d8e2ca,#cfd9be);
+  border-color:rgba(74,158,79,0.1);
+  box-shadow:
+    0 3px 0 0 #b0c098,
+    0 4px 0 0 #a0b088,
+    0 5px 8px rgba(0,0,0,0.05);
+}
+.month-cell.dead-cell{
+  background:linear-gradient(145deg,#d5cfc0,#ccc5b5);
+  box-shadow:
+    0 3px 0 0 #b0a898,
+    0 4px 0 0 #a09888,
+    0 5px 8px rgba(0,0,0,0.05);
+}
+/* Month cell mini grass */
+.month-cell .cell-grass-mini{
+  position:absolute;
+  width:1px;height:3px;
+  background:#8cb870;
+  border-radius:0 0 0.5px 0.5px;
+  z-index:1;opacity:.3;
+}
+/* Tree density levels for multi-tree cells */
+.month-tree-cluster{
+  position:absolute;bottom:0;left:0;right:0;top:0;
+  display:flex;align-items:flex-end;justify-content:center;
+  transform:rotateX(-50deg);transform-origin:bottom center;
+  z-index:2;pointer-events:none;
+}
+.month-tree-cluster svg{
+  position:absolute;bottom:0;
+  filter:drop-shadow(0.5px 1px 2px rgba(0,0,0,0.12));
+}
+.month-stats{
+  margin-top:8px;display:flex;justify-content:space-around;
+}
+.month-stat{
+  text-align:center;
+}
+.month-stat-val{
+  font-family:var(--font-serif);font-size:20px;
+  font-weight:700;color:var(--primary);
+}
+.month-stat-label{font-size:10px;color:var(--outline);margin-top:2px}
+
+/* Year View - 2.5D Land */
+.year-view{display:none}
+.year-label{
+  font-family:var(--font-serif);font-size:18px;font-weight:700;
+  text-align:center;margin-bottom:16px;color:var(--on-surface);
+}
+.year-hero{
+  text-align:center;padding:24px 16px;
+  background:linear-gradient(135deg,var(--surface-container-low),var(--surface-container));
+  border-radius:var(--radius-lg);
+  border:1px solid var(--outline-variant);
+  margin-bottom:16px;
+}
+.year-hero-number{
+  font-family:var(--font-serif);font-size:48px;
+  font-weight:700;color:var(--primary);line-height:1;
+}
+.year-hero-text{
+  font-size:14px;color:var(--on-surface-variant);margin-top:8px;
+  line-height:1.6;
+}
+.year-months-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:12px;
+}
+.year-month-card{
+  background:var(--surface-container-low);
+  border-radius:var(--radius-md);padding:10px 8px;
+  border:1px solid var(--outline-variant);
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+}
+.year-month-name{
+  font-size:11px;color:var(--outline);font-weight:600;
+  margin-bottom:4px;
+}
+.year-month-trees{
+  font-family:var(--font-serif);font-size:18px;
+  font-weight:700;color:var(--primary);
+}
+.year-month-min{
+  font-size:10px;color:var(--on-surface-variant);
+}
+/* Mini 2.5D land inside year month card */
+.year-month-land{
+  perspective:400px;
+  perspective-origin:50% 25%;
+  display:flex;justify-content:center;
+  padding:4px 2px 8px;
+  margin-top:6px;
+}
+.year-month-land-grid{
+  display:grid;grid-template-columns:repeat(7,8px);gap:1px;
+  transform:rotateX(45deg);
+  transform-style:preserve-3d;
+  padding:4px;
+  border-radius:4px;
+  background:linear-gradient(135deg,#ddd3b5,#cfc5a5);
+  box-shadow:
+    0 6px 14px rgba(139,115,85,0.12),
+    inset 0 0.5px 1px rgba(255,255,255,0.2);
+  border:1px solid rgba(139,115,85,0.12);
+}
+.year-cell{
+  width:8px;height:8px;
+  border-radius:1px;
+  position:relative;
+  background:rgba(139,115,85,0.1);
+  box-shadow:0 1px 0 0 rgba(192,176,144,0.4);
+}
+.year-cell.has-tree{
+  background:#c8e6c0;
+  box-shadow:0 1px 0 0 rgba(176,192,152,0.4);
+}
+.year-cell.has-tree-heavy{
+  background:#8cc580;
+  box-shadow:0 1px 0 0 rgba(140,180,120,0.4);
+}
+.year-cell.has-tree-full{
+  background:#4a9e4f;
+  box-shadow:0 1px 0 0 rgba(74,158,79,0.4);
+}
+/* Tiny tree dots on year cells */
+.year-cell .yt-dot{
+  position:absolute;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%) rotateX(-45deg);
+  transform-origin:center center;
+  width:4px;height:6px;
+  z-index:1;
+}
+.year-cell .yt-dot svg{
+  width:100%;height:100%;
+  filter:drop-shadow(0 0.5px 1px rgba(0,0,0,0.1));
+}
+.year-cell.empty-year{
+  background:transparent;
+  box-shadow:none;
+}
+
+/* ========== Stats Page ========== */
+.stats-greeting{
+  font-family:var(--font-serif);font-size:20px;font-weight:700;
+  margin-bottom:16px;color:var(--on-surface);
+}
+.stats-today-card{
+  background:linear-gradient(135deg,var(--primary) 0%,var(--primary-container) 100%);
+  border-radius:var(--radius-lg);padding:20px;
+  color:var(--on-primary);margin-bottom:16px;
+  box-shadow:var(--shadow-2);
+}
+.stats-today-label{font-size:12px;opacity:.8;margin-bottom:4px}
+.stats-today-vals{
+  display:flex;justify-content:space-around;
+}
+.stats-today-item{text-align:center}
+.stats-today-num{
+  font-family:var(--font-serif);font-size:28px;font-weight:700;
+}
+.stats-today-unit{font-size:11px;opacity:.7;margin-top:2px}
+
+.stats-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;
+  margin-bottom:16px;
+}
+.stats-card{
+  background:var(--surface-container-low);
+  border-radius:var(--radius-md);padding:14px;
+  border:1px solid var(--outline-variant);
+  text-align:center;
+}
+.stats-card-val{
+  font-family:var(--font-serif);font-size:22px;
+  font-weight:700;color:var(--primary);
+}
+.stats-card-label{
+  font-size:11px;color:var(--on-surface-variant);margin-top:4px;
+}
+
+/* Achievements section */
+.achievements-title{
+  font-family:var(--font-serif);font-size:16px;font-weight:600;
+  margin-bottom:10px;color:var(--on-surface);
+}
+.achievements-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:8px;
+  margin-bottom:16px;
+}
+.achievement-card{
+  background:var(--surface-container-low);
+  border-radius:var(--radius);padding:12px;
+  border:1px solid var(--outline-variant);
+  display:flex;align-items:center;gap:10px;
+  transition:all .2s;
+}
+.achievement-card.unlocked{
+  border-color:var(--inverse-primary);
+  background:rgba(161,212,148,0.08);
+}
+.achievement-card.locked{opacity:.6}
+.achievement-icon{font-size:24px}
+.achievement-info{flex:1;min-width:0}
+.achievement-name{font-size:12px;font-weight:600;color:var(--on-surface)}
+.achievement-desc{font-size:10px;color:var(--on-surface-variant);margin-top:2px}
+.achievement-check{color:var(--primary);font-size:16px}
+.achievement-lock{color:var(--outline);font-size:14px}
+
+.stats-footer{
+  text-align:center;margin-top:8px;
+}
+
+/* ========== Tree Selector Modal ========== */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(27,28,26,0.5);
+  z-index:200;display:none;align-items:flex-end;justify-content:center;
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+}
+.modal-overlay.show{display:flex}
+
+.modal-sheet{
+  background:var(--surface);border-radius:var(--radius-xl) var(--radius-xl) 0 0;
+  width:100%;max-height:80vh;overflow-y:auto;
+  padding:20px 20px 32px;
+  animation:slideUp .3s ease;
+}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+
+.modal-handle{
+  width:36px;height:4px;background:var(--outline-variant);
+  border-radius:2px;margin:0 auto 16px;
+}
+.modal-title{
+  font-family:var(--font-serif);font-size:18px;font-weight:700;
+  color:var(--on-surface);margin-bottom:16px;text-align:center;
+}
+
+.tree-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;
+}
+.tree-card{
+  background:var(--surface-container-low);
+  border-radius:var(--radius-md);padding:14px;
+  border:2px solid var(--outline-variant);
+  cursor:pointer;transition:all .2s;
+  display:flex;flex-direction:column;align-items:center;
+  gap:6px;position:relative;
+}
+.tree-card:hover{border-color:var(--outline);background:var(--surface-container)}
+.tree-card.selected{
+  border-color:var(--primary);background:rgba(21,66,18,0.04);
+  box-shadow:0 0 0 1px var(--primary);
+}
+.tree-card.locked{
+  opacity:.5;cursor:not-allowed;
+  filter:grayscale(0.8);
+}
+.tree-card.locked:hover{border-color:var(--outline-variant);background:var(--surface-container-low)}
+.tree-card-svg{width:48px;height:48px}
+.tree-card-name{font-size:13px;font-weight:600;color:var(--on-surface)}
+.tree-card-unlock{
+  font-size:10px;color:var(--outline);
+  display:flex;align-items:center;gap:3px;
+}
+.tree-card-lock{
+  position:absolute;top:8px;right:8px;
+  width:16px;height:16px;color:var(--outline);
+}
+
+/* ========== Achievement Unlock Modal ========== */
+.unlock-overlay{
+  position:fixed;inset:0;background:rgba(27,28,26,0.7);
+  z-index:300;display:none;align-items:center;justify-content:center;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+}
+.unlock-overlay.show{display:flex}
+
+.unlock-card{
+  background:var(--surface);border-radius:var(--radius-xl);
+  padding:32px 24px;text-align:center;max-width:280px;
+  animation:unlockPop .5s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:var(--shadow-3);
+  position:relative;overflow:hidden;
+}
+@keyframes unlockPop{
+  from{transform:scale(.5);opacity:0}
+  to{transform:scale(1);opacity:1}
+}
+.unlock-card::before{
+  content:'';position:absolute;inset:-50%;
+  background:conic-gradient(from 0deg,transparent,rgba(161,212,148,0.3),transparent,rgba(200,159,24,0.2),transparent);
+  animation:unlockSpin 3s linear infinite;
+}
+@keyframes unlockSpin{to{transform:rotate(360deg)}}
+.unlock-inner{position:relative;z-index:1}
+.unlock-label{
+  font-size:12px;color:var(--on-surface-variant);
+  letter-spacing:3px;text-transform:uppercase;margin-bottom:8px;font-weight:600;
+}
+.unlock-tree-svg{width:72px;height:72px;margin:8px auto}
+.unlock-tree-name{
+  font-family:var(--font-serif);font-size:20px;font-weight:700;
+  color:var(--primary);margin:8px 0 4px;
+}
+.unlock-desc{
+  font-size:13px;color:var(--on-surface-variant);
+  line-height:1.5;margin-bottom:16px;
+}
+
+/* Particles */
+.particles{
+  position:absolute;inset:0;pointer-events:none;z-index:0;
+}
+.particle{
+  position:absolute;width:6px;height:6px;border-radius:50%;
+  animation:particleFloat 2s ease-out forwards;
+}
+@keyframes particleFloat{
+  0%{transform:translate(0,0) scale(1);opacity:1}
+  100%{transform:translate(var(--tx),var(--ty)) scale(0);opacity:0}
+}
+
+/* ========== Abandon Confirm Modal ========== */
+.confirm-overlay{
+  position:fixed;inset:0;background:rgba(27,28,26,0.5);
+  z-index:250;display:none;align-items:center;justify-content:center;
+  backdrop-filter:blur(4px);
+}
+.confirm-overlay.show{display:flex}
+.confirm-card{
+  background:var(--surface);border-radius:var(--radius-lg);
+  padding:24px;text-align:center;max-width:280px;
+  box-shadow:var(--shadow-3);
+}
+.confirm-icon{font-size:40px;margin-bottom:8px}
+.confirm-title{
+  font-family:var(--font-serif);font-size:16px;font-weight:700;
+  color:var(--on-surface);margin-bottom:6px;
+}
+.confirm-desc{
+  font-size:13px;color:var(--on-surface-variant);
+  line-height:1.5;margin-bottom:16px;
+}
+.confirm-btns{display:flex;gap:8px;justify-content:center}
+
+/* ========== Toast ========== */
+.toast{
+  position:fixed;top:48px;left:50%;transform:translateX(-50%) translateY(-20px);
+  background:var(--primary-container);color:var(--on-primary);
+  padding:10px 20px;border-radius:var(--radius-full);
+  font-size:13px;font-weight:500;z-index:400;
+  opacity:0;transition:all .3s;pointer-events:none;
+  box-shadow:var(--shadow-2);white-space:nowrap;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ========== Animations ========== */
+@keyframes sway{
+  0%,100%{transform:rotate(-1.5deg)}
+  50%{transform:rotate(1.5deg)}
+}
+.sway{animation:sway 3s ease-in-out infinite;transform-origin:bottom center}
+
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+.pulse{animation:pulse 2s ease-in-out infinite}
+
+@keyframes growUp{
+  from{transform:scaleY(0);transform-origin:bottom}
+  to{transform:scaleY(1);transform-origin:bottom}
+}
+
+/* ========== Mobile Responsive ========== */
+@media (max-width: 500px) {
+  html, body {
+    height: 100dvh;
+    overflow: hidden;
+  }
+  body {
+    padding-top: 0;
+    padding-bottom: calc(64px + env(safe-area-inset-bottom));
+  }
+  /* Hide Electron titlebar on mobile */
+  .titlebar { display: none !important; }
+  /* Content area fills screen minus bottom nav */
+  .content-area {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 8px;
+  }
+  /* Bottom nav mobile style */
+  .bottom-nav {
+    height: calc(64px + env(safe-area-inset-bottom));
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .nav-item {
+    min-height: 44px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* Timer page adjustments */
+  .timer-ring-wrap { margin: 8px auto 4px; }
+  .timer-ring-svg { width: 180px; height: 180px; }
+  .timer-time { font-size: 36px; }
+  .controls { gap: 8px; }
+  .btn { min-height: 44px; font-size: 14px; }
+  .seed-selector { min-height: 44px; }
+  /* Settings toggle */
+  .settings-toggle { min-height: 44px; }
+  .setting-row { min-height: 44px; }
+
+  /* ===== 2.5D Land - Day View Mobile ===== */
+  .iso-land-wrap {
+    perspective: 700px;
+    padding: 12px 4px 20px;
+  }
+  .land-grid {
+    grid-template-columns: repeat(6, 44px);
+    gap: 3px;
+    padding: 14px;
+  }
+  .land-cell {
+    width: 44px; height: 44px;
+    box-shadow:
+      0 4px 0 0 #c0b090,
+      0 5px 0 0 #b0a080,
+      0 6px 8px rgba(0,0,0,0.06);
+  }
+  .land-cell:hover { transform: none; }
+  .land-cell.has-tree:hover,
+  .land-cell.empty:hover { transform: none; }
+  .tree-on-cell { height: 230%; left:-12%; right:-12%; }
+  .tree-on-cell svg { width: 78%; height: 42%; }
+  .tree-ground-shadow { width: 22px; height: 6px; bottom: 6px; }
+
+  /* ===== Month View Mobile ===== */
+  .month-land-wrap {
+    perspective: 500px;
+    padding: 8px 2px 12px;
+  }
+  .month-grid {
+    grid-template-columns: repeat(7, 38px);
+    gap: 2px;
+    padding: 10px;
+  }
+  .month-cell {
+    width: 38px; height: 38px;
+    box-shadow:
+      0 2px 0 0 #c0b090,
+      0 3px 0 0 #b0a080,
+      0 4px 6px rgba(0,0,0,0.04);
+  }
+  .month-cell:hover { transform: none; }
+  .month-cell .cell-date { font-size: 7px; top: 1px; left: 2px; }
+  .month-tree-on-cell { height: 200%; left:-8%; right:-8%; }
+  .month-tree-on-cell svg { width: 70%; height: 36%; }
+
+  /* ===== Year View Mobile ===== */
+  .year-months-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .year-month-land-grid {
+    grid-template-columns: repeat(7, 6px);
+    gap: 0.5px;
+    padding: 3px;
+  }
+  .year-cell { width: 6px; height: 6px; }
+  .year-cell .yt-dot { width: 3px; height: 4px; }
+
+  /* ===== Stats Page Mobile ===== */
+  .stats-today-card {
+    padding: 16px;
+  }
+  .stats-today-num { font-size: 40px; }
+
+  /* ===== Modal adjustments ===== */
+  .modal-sheet {
+    max-height: 70vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+  }
+  .tree-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .tree-card { min-height: 80px; }
+  .tree-card:active { transform: scale(0.95); }
+
+  /* Toast position */
+  .toast { top: env(safe-area-inset-top, 12px); }
+}
+
+/* Very small screens (iPhone SE, etc.) */
+@media (max-width: 375px) {
+  .land-grid {
+    grid-template-columns: repeat(6, 38px);
+    gap: 2px;
+    padding: 10px;
+  }
+  .land-cell { width: 38px; height: 38px; }
+  .month-grid {
+    grid-template-columns: repeat(7, 34px);
+    gap: 2px;
+    padding: 8px;
+  }
+  .month-cell { width: 34px; height: 34px; }
+  .timer-ring-svg { width: 160px; height: 160px; }
+  .timer-time { font-size: 32px; }
+  .year-months-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Landscape phone - use side-by-side layout */
+@media (max-height: 500px) and (orientation: landscape) {
+  .content-area { padding-bottom: 0; }
+  .bottom-nav { height: 50px; }
+  body { padding-bottom: 50px; }
+  .timer-ring-svg { width: 140px; height: 140px; }
+  .timer-time { font-size: 28px; }
+  .iso-land-wrap { perspective: 500px; padding: 6px 4px 10px; }
+}
+
+</style>
+</head>
+<body>
+
+<!-- ========== Titlebar ========== -->
+<div class="titlebar" id="titlebar">
+  <span class="titlebar-title">🌿 专注森林</span>
+  <div class="titlebar-btns">
+    <button class="titlebar-btn" onclick="window.electronAPI&&window.electronAPI.minimize()">&#9725;</button>
+    <button class="titlebar-btn close" onclick="window.electronAPI&&window.electronAPI.close()">&#10005;</button>
+  </div>
+</div>
+
+<!-- ========== Content ========== -->
+<div class="content-area">
+
+  <!-- ===== Timer Page ===== -->
+  <div id="page-timer" class="page active">
+    <div class="mode-label focus" id="modeLabel">专 注 模 式</div>
+
+    <div class="timer-ring-wrap">
+      <svg class="timer-ring-svg" width="220" height="220" viewBox="0 0 220 220">
+        <circle class="ring-bg" cx="110" cy="110" r="100"/>
+        <circle class="ring-progress focus" id="progressRing" cx="110" cy="110" r="100"
+          stroke-dasharray="628.32" stroke-dashoffset="0"/>
+        <!-- Leaf at progress end -->
+        <g id="progressLeaf" transform="rotate(-90 110 110)" opacity="0">
+          <path d="M0,-4 Q4,-8 0,-12 Q-4,-8 0,-4" fill="var(--inverse-primary)" transform="translate(110,10)"/>
+        </g>
+      </svg>
+      <div class="growing-plant" id="growingPlant">
+        <!-- Dynamic plant SVG injected by JS -->
+      </div>
+    </div>
+
+    <div class="timer-display">
+      <div class="timer-time" id="timerTime">25:00</div>
+      <div class="timer-sub" id="timerSub">点击开始专注</div>
+    </div>
+
+    <div class="controls" id="controlsArea">
+      <button class="btn btn-primary" id="btnStart" onclick="toggleTimer()">开始专注</button>
+      <button class="btn btn-secondary" id="btnReset" onclick="resetTimer()" style="display:none">重置</button>
+    </div>
+
+    <div class="seed-selector" id="seedSelector" onclick="openTreeModal()">
+      <svg viewBox="0 0 28 28" id="seedSelectorIcon">
+        <circle cx="14" cy="22" rx="8" ry="3" fill="#8B7355" opacity=".3"/>
+        <rect x="12.5" y="14" width="3" height="9" rx="1" fill="#8B6914"/>
+        <circle cx="14" cy="10" r="7" fill="#3a9e4f"/>
+        <circle cx="10" cy="11" r="4.5" fill="#4ab85f"/>
+        <circle cx="18" cy="11" r="4.5" fill="#4ab85f"/>
+      </svg>
+      <div>
+        <div class="seed-selector-text">选择树种</div>
+        <div class="seed-selector-name" id="selectedTreeName">小橡树</div>
+      </div>
+    </div>
+    <div class="session-info" id="sessionInfo">今日已专注 0 次</div>
+
+    <button class="settings-toggle" id="settingsToggle" onclick="toggleSettings()">
+      <svg viewBox="0 0 16 16"><path d="M8 11L3 6h10l-5 5z"/></svg>
+      设置
+    </button>
+    <div class="settings-panel" id="settingsPanel">
+      <div class="settings-card">
+        <div class="setting-row">
+          <span class="setting-label">🎯 专注时长（分钟）</span>
+          <input class="setting-input" id="focusMin" type="number" min="1" max="120" value="25" onchange="onSettingChange()">
+        </div>
+        <div class="setting-row">
+          <span class="setting-label">☕ 休息时长（分钟）</span>
+          <input class="setting-input" id="breakMin" type="number" min="1" max="60" value="5" onchange="onSettingChange()">
+        </div>
+        <div class="setting-row">
+          <span class="setting-label">🔔 提示音</span>
+          <label class="toggle-wrap"><input type="checkbox" id="soundToggle" checked> 开启</label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Land Page ===== -->
+  <div id="page-land" class="page">
+    <div class="land-header">
+      <div class="land-title">我的土地</div>
+      <div class="view-switcher">
+        <button class="view-btn active" onclick="switchLandView('day',this)">日</button>
+        <button class="view-btn" onclick="switchLandView('month',this)">月</button>
+        <button class="view-btn" onclick="switchLandView('year',this)">年</button>
+      </div>
+    </div>
+
+    <!-- Day View -->
+    <div id="landDay" class="day-view">
+      <div class="day-date" id="dayDate"></div>
+      <div class="iso-land-wrap">
+        <div class="land-grid" id="landGrid"></div>
+        <div class="land-particles" id="landParticles"></div>
+      </div>
+      <div class="day-summary" id="daySummary"></div>
+    </div>
+
+    <!-- Month View -->
+    <div id="landMonth" class="month-view">
+      <div class="month-nav">
+        <button class="month-nav-btn" onclick="changeMonth(-1)">‹</button>
+        <span class="month-label" id="monthLabel"></span>
+        <button class="month-nav-btn" onclick="changeMonth(1)">›</button>
+      </div>
+      <div class="month-weekdays" id="monthWeekdays"></div>
+      <div class="month-land-wrap">
+        <div class="month-grid" id="monthGrid"></div>
+      </div>
+      <div class="month-stats" id="monthStats"></div>
+    </div>
+
+    <!-- Year View -->
+    <div id="landYear" class="year-view">
+      <div class="year-label" id="yearLabel"></div>
+      <div class="year-hero" id="yearHero"></div>
+      <div class="year-months-grid" id="yearMonthsGrid"></div>
+    </div>
+  </div>
+
+  <!-- ===== Stats Page ===== -->
+  <div id="page-stats" class="page">
+    <div class="stats-greeting" id="statsGreeting">专注成就</div>
+
+    <div class="stats-today-card">
+      <div class="stats-today-label" id="statsTodayLabel">今天</div>
+      <div class="stats-today-vals">
+        <div class="stats-today-item">
+          <div class="stats-today-num" id="statTodayTrees">0</div>
+          <div class="stats-today-unit">棵树</div>
+        </div>
+        <div class="stats-today-item">
+          <div class="stats-today-num" id="statTodayMin">0</div>
+          <div class="stats-today-unit">分钟</div>
+        </div>
+        <div class="stats-today-item">
+          <div class="stats-today-num" id="statStreak">0</div>
+          <div class="stats-today-unit">天连续</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stats-card">
+        <div class="stats-card-val" id="statTotalTrees">0</div>
+        <div class="stats-card-label">🌳 累计种树</div>
+      </div>
+      <div class="stats-card">
+        <div class="stats-card-val" id="statTotalMin">0</div>
+        <div class="stats-card-label">⏳ 累计分钟</div>
+      </div>
+      <div class="stats-card">
+        <div class="stats-card-val" id="statDeadTrees">0</div>
+        <div class="stats-card-label">🥀 枯萎</div>
+      </div>
+      <div class="stats-card">
+        <div class="stats-card-val" id="statUnlocked">0</div>
+        <div class="stats-card-label">🌱 已解锁</div>
+      </div>
+    </div>
+
+    <div class="achievements-title">🌿 树种图鉴</div>
+    <div class="achievements-grid" id="achievementsGrid"></div>
+
+    <div class="stats-footer">
+      <button class="btn btn-danger btn-sm" onclick="confirmResetData()">清除所有数据</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ========== Bottom Navigation ========== -->
+<div class="bottom-nav">
+  <button class="nav-item active" onclick="switchTab('timer',this)">
+    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>
+    专注
+  </button>
+  <button class="nav-item" onclick="switchTab('land',this)">
+    <svg viewBox="0 0 24 24"><path d="M12 22C6.48 22 2 17.52 2 12S6.48 2 12 2s10 4.48 10 10-4.48 10-10 10zm0-18c-4.41 0-8 3.59-8 8s3.59 8 8 8 8-3.59 8-8-3.59-8-8-8zm-1 14h2v-4h-2v4zm0-6h2V6h-2v6z"/><path d="M6 20c1-3 3-6 6-6s5 3 6 6" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="10" r="2"/></svg>
+    土地
+  </button>
+  <button class="nav-item" onclick="switchTab('stats',this)">
+    <svg viewBox="0 0 24 24"><path d="M19 5h-2V3h-2v2h-2V3h-2v2H9V3H7v2H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 14H5V7h14v12zM7 10h2v6H7zm4-2h2v8h-2zm4 4h2v4h-2z"/></svg>
+    成就
+  </button>
+</div>
+
+<!-- ========== Tree Selector Modal ========== -->
+<div class="modal-overlay" id="treeModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">选择树种</div>
+    <div class="tree-grid" id="treeGrid"></div>
+  </div>
+</div>
+
+<!-- ========== Achievement Unlock Modal ========== -->
+<div class="unlock-overlay" id="unlockModal">
+  <div class="unlock-card">
+    <div class="particles" id="unlockParticles"></div>
+    <div class="unlock-inner">
+      <div class="unlock-label">新 树 种 解 锁</div>
+      <div class="unlock-tree-svg" id="unlockTreeSvg"></div>
+      <div class="unlock-tree-name" id="unlockTreeName"></div>
+      <div class="unlock-desc" id="unlockTreeDesc"></div>
+      <button class="btn btn-primary" onclick="closeUnlockModal()">太棒了！</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== Abandon Confirm Modal ========== -->
+<div class="confirm-overlay" id="abandonModal">
+  <div class="confirm-card">
+    <div class="confirm-icon">🥀</div>
+    <div class="confirm-title">确认放弃专注？</div>
+    <div class="confirm-desc">放弃后，这棵树将变成枯树留在你的土地上，作为警示。</div>
+    <div class="confirm-btns">
+      <button class="btn btn-secondary btn-sm" onclick="closeAbandonModal()">继续专注</button>
+      <button class="btn btn-danger btn-sm" onclick="confirmAbandon()">确认放弃</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== Toast ========== -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// TREE DEFINITIONS
+// ============================================================
+const TREE_TYPES = [
+  {
+    id:'grass', name:'普通绿草', unlockMinutes:0,
+    desc:'最朴素的绿色，是所有伟大的起点',
+    svg:`<svg viewBox="0 0 40 40"><ellipse cx="20" cy="37" rx="10" ry="3" fill="#8B7355" opacity=".25"/><path d="M20 35 L20 20" stroke="#4a7c3f" stroke-width="2.2" stroke-linecap="round"/><path d="M20 24 Q13 16 15 22" stroke="#4a7c3f" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M20 28 Q27 20 25 26" stroke="#5a9c4f" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M20 22 Q11 12 14 20" stroke="#3a8c3f" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>`
+  },
+  {
+    id:'oak', name:'小橡树', unlockMinutes:0,
+    desc:'坚实的橡树，象征持久的力量',
+    svg:`<svg viewBox="0 0 40 40"><ellipse cx="20" cy="37" rx="10" ry="3" fill="#8B7355" opacity=".25"/><rect x="18" y="22" width="4" height="14" rx="1.5" fill="#8B6914"/><ellipse cx="20" cy="16" rx="11" ry="9" fill="#2d8a3e"/><ellipse cx="14" cy="18" rx="6" ry="5.5" fill="#3a9e4f"/><ellipse cx="26" cy="18" rx="6" ry="5.5" fill="#3a9e4f"/><ellipse cx="20" cy="12" rx="7" ry="5" fill="#4ab85f"/></svg>`
+  },
+  {
+    id:'cactus', name:'仙人掌', unlockMinutes:50,
+    desc:'耐旱的战士，在最艰难的时刻也能坚持',
+    svg:`<svg viewBox="0 0 40 40"><ellipse cx="20" cy="37" rx="8" ry="2.5" fill="#8B7355" opacity=".25"/><rect x="17" y="12" width="6" height="24" rx="3" fill="#2d8a3e"/><rect x="7" y="16" width="5.5" height="11" rx="2.8" fill="#3a9e4f"/><rect x="12.5" y="18" width="4.5" height="6" rx="1.5" fill="#2d8a3e"/><rect x="27.5" y="14" width="5.5" height="9" rx="2.8" fill="#3a9e4f"/><rect x="23" y="16" width="4.5" height="5" rx="1.5" fill="#2d8a3e"/><line x1="17" y1="18" x2="15" y2="15" stroke="#5a5a5a" stroke-width=".6"/><line x1="23" y1="22" x2="25" y2="19" stroke="#5a5a5a" stroke-width=".6"/></svg>`
+  },
+  {
+    id:'bamboo', name:'竹子', unlockMinutes:100,
+    desc:'虚心有节，百折不挠',
+    svg:`<svg viewBox="0 0 40 40"><ellipse cx="20" cy="37" rx="8" ry="2.5" fill="#8B7355" opacity=".25"/><rect x="18" y="8" width="4" height="29" rx="2" fill="#5a9c4f"/><rect x="17.5" y="14" width="5" height="1.5" rx=".5" fill="#4a8c3f"/><rect x="17.5" y="22" width="5" height="1.5" rx=".5" fill="#4a8c3f"/><rect x="17.5" y="30" width="5" height="1.5" rx=".5" fill="#4a8c3f"/><path d="M22 14 Q30 8 28 12" stroke="#5a9c4f" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M18 22 Q10 16 12 20" stroke="#5a9c4f" stroke-width="1.8" fill="none" stroke-linecap="round"/><ellipse cx="28" cy="10" rx="4" ry="2" fill="#4ab85f" transform="rotate(-30 28 10)"/></svg>`
+  },
+  {
+    id:'fir', name:'冷杉', unlockMinutes:200,
+    desc:'挺拔的常青之树，冬季也依然苍翠',
+    svg:`<svg viewBox="0 0 40 40"><ellipse cx="20" cy="37" rx="8" ry="2.5" fill="#8B7355" opacity=".25"/><rect x="19" y="28" width="3" height="9" rx="1" fill="#8B6914"/><polygon points="20,4 11,18 29,18" fill="#1a6b2a"/><polygon points="20,10 9,24 31,24" fill="#2d8a3e"/><polygon points="20,16 7,30 33,30" fill="#3a9e4f"/></svg>`
+  },
+  {
+    id:'cherry', name:'樱花树', unlockMinutes:300,
+    desc:'春日浪漫，每一刻专注都如花绽放',
+    svg:`<svg viewBox="0 0 40 40"><ellipse cx="20" cy="37" rx="10" ry="3" fill="#8B7355" opacity=".25"/><rect x="18" y="22" width="4" height="14" rx="1.5" fill="#8B6914"/><circle cx="20" cy="14" r="10" fill="#ffb7c5"/><circle cx="13" cy="16" r="6.5" fill="#ff9fb5"/><circle cx="27" cy="16" r="6.5" fill="#ff9fb5"/><circle cx="20" cy="10" r="6" fill="#ffc5d0"/><circle cx="16" cy="12" r="1.8" fill="#ff85a0"/><circle cx="24" cy="12" r="1.8" fill="#ff85a0"/><circle cx="20" cy="18" r="1.5" fill="#ff85a0"/></svg>`
+  },
+  {
+    id:'apple', name:'苹果树', unlockMinutes:500,
+    desc:'辛勤浇灌，终会结出甘甜果实',
+    svg:`<svg viewBox="0 0 40 40"><ellipse cx="20" cy="37" rx="10" ry="3" fill="#8B7355" opacity=".25"/><rect x="18" y="22" width="4" height="14" rx="1.5" fill="#8B6914"/><ellipse cx="20" cy="16" rx="11" ry="9" fill="#2d8a3e"/><ellipse cx="14" cy="18" rx="6" ry="5.5" fill="#3a9e4f"/><ellipse cx="26" cy="18" rx="6" ry="5.5" fill="#3a9e4f"/><circle cx="14" cy="14" r="2.5" fill="#e74c3c"/><circle cx="26" cy="16" r="2.5" fill="#e74c3c"/><circle cx="20" cy="22" r="2.5" fill="#e74c3c"/></svg>`
+  },
+  {
+    id:'sunflower', name:'黄金向日葵', unlockMinutes:800,
+    desc:'追逐光芒，每一分钟都在向阳生长',
+    svg:`<svg viewBox="0 0 40 40"><ellipse cx="20" cy="37" rx="8" ry="2.5" fill="#8B7355" opacity=".25"/><rect x="19" y="20" width="3" height="17" rx="1" fill="#5a8c3f"/><path d="M22 26 Q28 22 27 28" fill="#4a9c3f"/><circle cx="20" cy="14" r="5" fill="#8B6914"/><ellipse cx="20" cy="7" rx="3" ry="4.5" fill="#f5c842"/><ellipse cx="27" cy="10" rx="3" ry="4.5" fill="#f5c842" transform="rotate(50 27 10)"/><ellipse cx="29" cy="17" rx="3" ry="4.5" fill="#f5c842" transform="rotate(100 29 17)"/><ellipse cx="25" cy="23" rx="3" ry="4.5" fill="#f5c842" transform="rotate(150 25 23)"/><ellipse cx="13" cy="10" rx="3" ry="4.5" fill="#f5c842" transform="rotate(-50 13 10)"/><ellipse cx="11" cy="17" rx="3" ry="4.5" fill="#f5c842" transform="rotate(-100 11 17)"/><ellipse cx="15" cy="23" rx="3" ry="4.5" fill="#f5c842" transform="rotate(-150 15 23)"/></svg>`
+  },
+  {
+    id:'mushroom', name:'梦幻发光蘑菇', unlockMinutes:2000,
+    desc:'来自魔法森林的馈赠，专注的终极荣耀',
+    svg:`<svg viewBox="0 0 40 40"><ellipse cx="20" cy="37" rx="10" ry="3" fill="#8B7355" opacity=".15"/><rect x="17" y="22" width="6" height="14" rx="2" fill="#e8d5f0"/><ellipse cx="20" cy="18" rx="14" ry="10" fill="#9b59b6"/><ellipse cx="20" cy="16" rx="12" ry="8" fill="#8e44ad"/><circle cx="14" cy="14" r="2.5" fill="#d4a5e8" opacity=".7"/><circle cx="26" cy="14" r="1.8" fill="#d4a5e8" opacity=".7"/><circle cx="20" cy="10" r="2.8" fill="#d4a5e8" opacity=".5"/><ellipse cx="20" cy="18" rx="16" ry="12" fill="none" stroke="#d4a5e8" stroke-width="1.5" opacity=".2"/></svg>`
+  },
+];
+
+const DEAD_TREE_SVG = `<svg viewBox="0 0 40 40"><ellipse cx="20" cy="37" rx="10" ry="3" fill="#8B7355" opacity=".15"/><rect x="18" y="20" width="3.5" height="16" rx="1" fill="#8B7355"/><path d="M20 20 L13 12 M13 12 L9 8 M13 12 L15 6" stroke="#8B7355" stroke-width="2" stroke-linecap="round" fill="none"/><path d="M20 24 L27 16 M27 16 L31 12 M27 16 L25 10" stroke="#8B7355" stroke-width="1.5" stroke-linecap="round" fill="none"/></svg>`;
+
+// Growing stages SVGs for the timer
+const GROWING_STAGES = {
+  seed: `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#8B7355" opacity=".25"/><ellipse cx="30" cy="50" rx="8" ry="3" fill="#8B7355" opacity=".4"/><ellipse cx="30" cy="48" rx="5" ry="3.5" fill="#a0845c"/></svg>`,
+  sprout: `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#8B7355" opacity=".25"/><ellipse cx="30" cy="50" rx="8" ry="3" fill="#8B7355" opacity=".4"/><rect x="29" y="40" width="2.5" height="10" rx="1" fill="#5a8c3f"/><path d="M30 44 Q24 38 27 42" stroke="#4a7c3f" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>`,
+  small: `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#8B7355" opacity=".25"/><ellipse cx="30" cy="50" rx="8" ry="3" fill="#8B7355" opacity=".4"/><rect x="29" y="32" width="2.5" height="18" rx="1" fill="#5a8c3f"/><path d="M30 40 Q22 32 25 38" stroke="#4a7c3f" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M30 36 Q38 28 35 34" stroke="#5a9c4f" stroke-width="2" fill="none" stroke-linecap="round"/><ellipse cx="30" cy="30" rx="8" ry="6" fill="#3a9e4f" opacity=".6"/></svg>`,
+  medium: `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#8B7355" opacity=".25"/><ellipse cx="30" cy="50" rx="8" ry="3" fill="#8B7355" opacity=".4"/><rect x="28.5" y="28" width="3" height="22" rx="1" fill="#6a8c3f"/><path d="M30 38 Q20 30 24 36" stroke="#4a7c3f" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M30 34 Q40 26 36 32" stroke="#5a9c4f" stroke-width="2" fill="none" stroke-linecap="round"/><ellipse cx="30" cy="24" rx="12" ry="10" fill="#2d8a3e"/><ellipse cx="24" cy="26" rx="6" ry="5" fill="#3a9e4f"/><ellipse cx="36" cy="26" rx="6" ry="5" fill="#3a9e4f"/></svg>`,
+};
+
+// ============================================================
+// STATE
+// ============================================================
+let state = {
+  focusMin: 25, breakMin: 5,
+  mode: 'focus',
+  running: false, paused: false,
+  remaining: 25*60, total: 25*60,
+  selectedTree: 'oak',
+  trees: [],       // { type, date, ts, dead }
+  history: {},     // { 'YYYY-MM-DD': { trees, minutes, deadTrees } }
+  totalFocusMinutes: 0,
+  unlockedTrees: ['grass','oak'],
+  seenUnlocks: [],
+};
+
+// Month view state
+let viewMonth = new Date().getMonth();
+let viewYear = new Date().getFullYear();
+
+// ============================================================
+// PERSISTENCE
+// ============================================================
+function save() {
+  localStorage.setItem('focusForestV2', JSON.stringify(state));
+}
+
+function load() {
+  try {
+    const d = JSON.parse(localStorage.getItem('focusForestV2'));
+    if (d && d.trees) {
+      state.focusMin = d.focusMin || 25;
+      state.breakMin = d.breakMin || 5;
+      state.selectedTree = d.selectedTree || 'oak';
+      state.trees = d.trees || [];
+      state.history = d.history || {};
+      state.totalFocusMinutes = d.totalFocusMinutes || 0;
+      state.unlockedTrees = d.unlockedTrees || ['grass','oak'];
+      state.seenUnlocks = d.seenUnlocks || [];
+      state.mode = 'focus';
+      state.running = false;
+      state.paused = false;
+      state.remaining = state.focusMin * 60;
+      state.total = state.focusMin * 60;
+      return;
+    }
+    // Try migrating from v1 format
+    const old = JSON.parse(localStorage.getItem('focusForest'));
+    if (old) {
+      const emojiMap = {'🌲':'fir','🌳':'oak','🎄':'fir','🌴':'cactus','🎋':'bamboo','🪻':'cherry'};
+      state.focusMin = old.focusMin || 25;
+      state.breakMin = old.breakMin || 5;
+      state.trees = (old.trees||[]).map(t => ({
+        type: emojiMap[t.emoji] || 'oak',
+        date: t.date, ts: t.ts, dead: false
+      }));
+      state.selectedTree = emojiMap[old.selectedTree] || 'oak';
+      state.history = old.history || {};
+      // Calculate totalFocusMinutes from history
+      let totalMin = 0;
+      for (const k in state.history) totalMin += state.history[k].minutes || 0;
+      state.totalFocusMinutes = totalMin;
+      // Unlock trees based on total
+      checkUnlocks(true);
+      localStorage.removeItem('focusForest');
+      save();
+    }
+  } catch(e) { console.error('Load error', e); }
+}
+
+function today() {
+  return new Date().toISOString().slice(0,10);
+}
+
+// ============================================================
+// GAMIFICATION
+// ============================================================
+function checkUnlocks(silent) {
+  let newUnlocks = [];
+  TREE_TYPES.forEach(t => {
+    if (state.totalFocusMinutes >= t.unlockMinutes && !state.unlockedTrees.includes(t.id)) {
+      state.unlockedTrees.push(t.id);
+      newUnlocks.push(t);
+    }
+  });
+  if (!silent && newUnlocks.length > 0) {
+    newUnlocks.forEach(t => {
+      if (!state.seenUnlocks.includes(t.id)) {
+        showUnlockModal(t);
+        state.seenUnlocks.push(t.id);
+      }
+    });
+    save();
+  }
+}
+
+function isTreeUnlocked(treeId) {
+  return state.unlockedTrees.includes(treeId);
+}
+
+function getTreeDef(treeId) {
+  return TREE_TYPES.find(t => t.id === treeId);
+}
+
+function getTreeSvg(treeId, dead) {
+  if (dead) return DEAD_TREE_SVG;
+  const def = getTreeDef(treeId);
+  return def ? def.svg : TREE_TYPES[1].svg;
+}
+
+// ============================================================
+// TIMER
+// ============================================================
+let timerInterval = null;
+
+function toggleTimer() {
+  if (state.running) {
+    pauseTimer();
+  } else {
+    startTimer();
+  }
+}
+
+function startTimer() {
+  state.running = true;
+  state.paused = false;
+  const btn = document.getElementById('btnStart');
+  btn.textContent = '暂停';
+  btn.className = 'btn btn-secondary';
+  document.getElementById('timerSub').textContent = state.mode === 'focus' ? '正在专注中…' : '休息中…';
+  document.getElementById('btnReset').style.display = '';
+  document.getElementById('seedSelector').style.pointerEvents = 'none';
+  document.getElementById('seedSelector').style.opacity = '.5';
+
+  // Request wake lock to prevent screen from sleeping
+  requestWakeLock();
+  // Request notification permission on first start
+  requestNotificationPermission();
+
+  timerInterval = setInterval(() => {
+    state.remaining--;
+    updateTimerDisplay();
+    updateGrowingPlant();
+
+    if (state.remaining <= 0) {
+      clearInterval(timerInterval);
+      onTimerEnd();
+    }
+  }, 1000);
+}
+
+function pauseTimer() {
+  state.running = false;
+  state.paused = true;
+  clearInterval(timerInterval);
+  releaseWakeLock();
+  const btn = document.getElementById('btnStart');
+  btn.textContent = '继续';
+  btn.className = 'btn btn-primary';
+  document.getElementById('timerSub').textContent = '已暂停';
+}
+
+function resetTimer() {
+  // If running focus mode, offer abandon
+  if (state.running && state.mode === 'focus') {
+    openAbandonModal();
+    return;
+  }
+  doReset();
+}
+
+function doReset() {
+  clearInterval(timerInterval);
+  state.running = false;
+  state.paused = false;
+  state.remaining = (state.mode === 'focus' ? state.focusMin : state.breakMin) * 60;
+  state.total = state.remaining;
+
+  const btn = document.getElementById('btnStart');
+  if (state.mode === 'focus') {
+    btn.textContent = '开始专注';
+    btn.className = 'btn btn-primary';
+  } else {
+    btn.textContent = '开始休息';
+    btn.className = 'btn btn-break';
+  }
+  document.getElementById('timerSub').textContent = state.mode === 'focus' ? '点击开始专注' : '休息时间';
+  document.getElementById('btnReset').style.display = 'none';
+  document.getElementById('seedSelector').style.pointerEvents = '';
+  document.getElementById('seedSelector').style.opacity = '';
+  updateTimerDisplay();
+  updateGrowingPlant();
+  updateModeUI();
+}
+
+function onTimerEnd() {
+  state.running = false;
+
+  // Mobile feedback: vibration
+  if (navigator.vibrate) {
+    navigator.vibrate([200, 100, 200]);
+  }
+
+  // Release wake lock
+  releaseWakeLock();
+
+  if (state.mode === 'focus') {
+    plantTree(false);
+    showToast('专注完成！种下了一棵' + getTreeDef(state.selectedTree).name + '，休息一下吧 🌿');
+    playSound();
+    checkUnlocks(false);
+    sendNotification('🌿 专注完成！', '种下了一棵' + getTreeDef(state.selectedTree).name + '，休息一下吧');
+
+    state.mode = 'break';
+    state.remaining = state.breakMin * 60;
+    state.total = state.remaining;
+    const btn = document.getElementById('btnStart');
+    btn.textContent = '开始休息';
+    btn.className = 'btn btn-break';
+    document.getElementById('timerSub').textContent = '准备休息';
+  } else {
+    showToast('休息结束，继续加油！🌱');
+    playSound();
+    sendNotification('🌱 休息结束！', '继续加油，开始新的专注吧');
+
+    state.mode = 'focus';
+    state.remaining = state.focusMin * 60;
+    state.total = state.remaining;
+    const btn = document.getElementById('btnStart');
+    btn.textContent = '开始专注';
+    btn.className = 'btn btn-primary';
+    document.getElementById('timerSub').textContent = '点击开始专注';
+  }
+
+  document.getElementById('btnReset').style.display = 'none';
+  document.getElementById('seedSelector').style.pointerEvents = '';
+  document.getElementById('seedSelector').style.opacity = '';
+  updateTimerDisplay();
+  updateGrowingPlant();
+  updateModeUI();
+  updateSessionInfo();
+  save();
+}
+
+// ============================================================
+// PLANT TREE
+// ============================================================
+function plantTree(dead) {
+  const tree = {
+    type: state.selectedTree,
+    date: today(),
+    ts: Date.now(),
+    dead: dead
+  };
+  state.trees.unshift(tree);
+
+  const d = today();
+  if (!state.history[d]) state.history[d] = { trees:0, minutes:0, deadTrees:0 };
+  if (dead) {
+    state.history[d].deadTrees++;
+  } else {
+    state.history[d].trees++;
+    state.history[d].minutes += state.focusMin;
+    state.totalFocusMinutes += state.focusMin;
+  }
+}
+
+// ============================================================
+// GROWING PLANT ANIMATION
+// ============================================================
+function updateGrowingPlant() {
+  const el = document.getElementById('growingPlant');
+  if (!el) return;
+
+  if (state.mode === 'break') {
+    el.innerHTML = `<svg viewBox="0 0 60 60"><text x="30" y="38" text-anchor="middle" font-size="28">☕</text></svg>`;
+    return;
+  }
+
+  if (!state.running && !state.paused) {
+    // Idle - show selected tree preview
+    const def = getTreeDef(state.selectedTree);
+    if (def) {
+      el.innerHTML = def.svg.replace('viewBox="0 0 40 40"', 'viewBox="0 0 40 40" class="sway"');
+    }
+    return;
+  }
+
+  const progress = state.total > 0 ? 1 - (state.remaining / state.total) : 0;
+
+  if (state.paused) {
+    // Show current stage but dimmed
+    el.style.opacity = '0.6';
+  } else {
+    el.style.opacity = '1';
+  }
+
+  let stageSvg;
+  if (progress < 0.1) {
+    stageSvg = GROWING_STAGES.seed;
+  } else if (progress < 0.3) {
+    stageSvg = GROWING_STAGES.sprout;
+  } else if (progress < 0.6) {
+    stageSvg = GROWING_STAGES.small;
+  } else if (progress < 0.9) {
+    stageSvg = GROWING_STAGES.medium;
+  } else {
+    // Almost done - show the selected tree type
+    const def = getTreeDef(state.selectedTree);
+    stageSvg = def ? def.svg : GROWING_STAGES.medium;
+  }
+  el.innerHTML = stageSvg;
+}
+
+// ============================================================
+// SOUND
+// ============================================================
+function playSound() {
+  if (!document.getElementById('soundToggle').checked) return;
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [523.25, 659.25, 783.99, 1046.5].forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.value = freq;
+      osc.type = 'sine';
+      gain.gain.setValueAtTime(0.12, ctx.currentTime + i*0.15);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i*0.15 + 0.3);
+      osc.start(ctx.currentTime + i*0.15);
+      osc.stop(ctx.currentTime + i*0.15 + 0.3);
+    });
+  } catch(e) {}
+}
+
+// ============================================================
+// UI UPDATES
+// ============================================================
+function updateTimerDisplay() {
+  const m = Math.floor(state.remaining / 60);
+  const s = state.remaining % 60;
+  document.getElementById('timerTime').textContent =
+    `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+
+  // Progress ring
+  const pct = state.total > 0 ? state.remaining / state.total : 0;
+  const circumference = 2 * Math.PI * 100; // ~628.32
+  const offset = circumference * (1 - pct);
+  const ring = document.getElementById('progressRing');
+  ring.style.strokeDashoffset = offset;
+
+  // Leaf position at progress end
+  const leaf = document.getElementById('progressLeaf');
+  if (state.running || state.paused) {
+    leaf.setAttribute('opacity', '1');
+    const angle = (1 - pct) * 360;
+    leaf.setAttribute('transform', `rotate(${angle - 90} 110 110)`);
+  } else {
+    leaf.setAttribute('opacity', '0');
+  }
+
+  // Title
+  const modeStr = state.mode === 'focus' ? '专注' : '休息';
+  document.title = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')} - ${modeStr} | 专注森林`;
+}
+
+function updateModeUI() {
+  const label = document.getElementById('modeLabel');
+  const ring = document.getElementById('progressRing');
+  const btn = document.getElementById('btnStart');
+
+  if (state.mode === 'focus') {
+    label.textContent = '专 注 模 式';
+    label.className = 'mode-label focus';
+    ring.className = 'ring-progress focus';
+  } else {
+    label.textContent = '休 息 时 间';
+    label.className = 'mode-label break';
+    ring.className = 'ring-progress break';
+  }
+  if (!state.running && !state.paused) {
+    document.title = '专注森林 - Focus Forest';
+  }
+}
+
+function updateSessionInfo() {
+  const d = today();
+  const h = state.history[d] || { trees:0, minutes:0 };
+  document.getElementById('sessionInfo').textContent = `今日已专注 ${h.trees} 次 · ${h.minutes} 分钟`;
+}
+
+function onSettingChange() {
+  const f = parseInt(document.getElementById('focusMin').value) || 25;
+  const b = parseInt(document.getElementById('breakMin').value) || 5;
+  state.focusMin = Math.max(1, Math.min(120, f));
+  state.breakMin = Math.max(1, Math.min(60, b));
+
+  if (!state.running && !state.paused) {
+    state.remaining = (state.mode === 'focus' ? state.focusMin : state.breakMin) * 60;
+    state.total = state.remaining;
+    updateTimerDisplay();
+    updateGrowingPlant();
+  }
+  save();
+}
+
+function toggleSettings() {
+  const panel = document.getElementById('settingsPanel');
+  const toggle = document.getElementById('settingsToggle');
+  panel.classList.toggle('open');
+  toggle.classList.toggle('open');
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function switchTab(name, el) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  if (el) el.classList.add('active');
+  document.getElementById('page-' + name).classList.add('active');
+
+  if (name === 'land') renderLand();
+  if (name === 'stats') renderStats();
+}
+
+// ============================================================
+// TREE SELECTOR MODAL
+// ============================================================
+function openTreeModal() {
+  if (state.running) return;
+  const grid = document.getElementById('treeGrid');
+  grid.innerHTML = TREE_TYPES.map(t => {
+    const unlocked = isTreeUnlocked(t.id);
+    const selected = state.selectedTree === t.id;
+    return `<div class="tree-card ${selected?'selected':''} ${unlocked?'':'locked'}"
+      onclick="${unlocked ? `selectTreeType('${t.id}')` : ''}"
+      ${!unlocked ? 'title="未解锁"' : ''}>
+      ${!unlocked ? `<svg class="tree-card-lock" viewBox="0 0 16 16"><path d="M8 1a3 3 0 00-3 3v2H4a1 1 0 00-1 1v6a1 1 0 001 1h8a1 1 0 001-1V7a1 1 0 00-1-1h-1V4a3 3 0 00-3-3zm2 5H6V4a2 2 0 114 0v2z" fill="currentColor"/></svg>` : ''}
+      <div class="tree-card-svg">${t.svg}</div>
+      <div class="tree-card-name">${t.name}</div>
+      ${unlocked
+        ? (selected ? '<div style="font-size:10px;color:var(--primary);font-weight:600">已选择</div>' : '')
+        : `<div class="tree-card-unlock">🔒 累计 ${t.unlockMinutes} 分钟</div>`
+      }
+    </div>`;
+  }).join('');
+  document.getElementById('treeModal').classList.add('show');
+}
+
+function closeTreeModal() {
+  document.getElementById('treeModal').classList.remove('show');
+}
+
+function selectTreeType(id) {
+  if (!isTreeUnlocked(id)) return;
+  state.selectedTree = id;
+  save();
+  closeTreeModal();
+  updateSeedSelector();
+  updateGrowingPlant();
+}
+
+function updateSeedSelector() {
+  const def = getTreeDef(state.selectedTree);
+  if (def) {
+    document.getElementById('selectedTreeName').textContent = def.name;
+    document.getElementById('seedSelectorIcon').innerHTML = def.svg
+      .replace('viewBox="0 0 40 40"', 'viewBox="0 0 40 40" width="28" height="28"')
+      .replace(/<svg[^>]*>/, m => m);
+  }
+}
+
+// Close modal on overlay click
+document.getElementById('treeModal').addEventListener('click', function(e) {
+  if (e.target === this) closeTreeModal();
+});
+
+// ============================================================
+// ABANDON MODAL
+// ============================================================
+function openAbandonModal() {
+  document.getElementById('abandonModal').classList.add('show');
+}
+function closeAbandonModal() {
+  document.getElementById('abandonModal').classList.remove('show');
+}
+function confirmAbandon() {
+  closeAbandonModal();
+  clearInterval(timerInterval);
+  state.running = false;
+  state.paused = false;
+  plantTree(true);
+  showToast('这棵树枯萎了…下次坚持住！🥀');
+  save();
+
+  state.mode = 'focus';
+  state.remaining = state.focusMin * 60;
+  state.total = state.remaining;
+
+  const btn = document.getElementById('btnStart');
+  btn.textContent = '开始专注';
+  btn.className = 'btn btn-primary';
+  document.getElementById('timerSub').textContent = '点击开始专注';
+  document.getElementById('btnReset').style.display = 'none';
+  document.getElementById('seedSelector').style.pointerEvents = '';
+  document.getElementById('seedSelector').style.opacity = '';
+  updateTimerDisplay();
+  updateGrowingPlant();
+  updateModeUI();
+  updateSessionInfo();
+}
+
+// ============================================================
+// UNLOCK MODAL
+// ============================================================
+function showUnlockModal(treeDef) {
+  // Celebration vibration
+  if (navigator.vibrate) {
+    navigator.vibrate([100, 50, 100, 50, 200]);
+  }
+
+  document.getElementById('unlockTreeSvg').innerHTML = treeDef.svg
+    .replace('viewBox="0 0 40 40"', 'viewBox="0 0 40 40" width="72" height="72"');
+  document.getElementById('unlockTreeName').textContent = treeDef.name;
+  document.getElementById('unlockTreeDesc').textContent = treeDef.desc;
+
+  // Create particles
+  const particles = document.getElementById('unlockParticles');
+  const colors = ['#a1d494','#f5c842','#ff9fb5','#d4a5e8','#4ab85f'];
+  let html = '';
+  for (let i = 0; i < 20; i++) {
+    const x = Math.random() * 100;
+    const y = Math.random() * 100;
+    const tx = (Math.random() - 0.5) * 120;
+    const ty = (Math.random() - 0.5) * 120;
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    const delay = Math.random() * 1;
+    const size = 4 + Math.random() * 6;
+    html += `<div class="particle" style="left:${x}%;top:${y}%;width:${size}px;height:${size}px;background:${color};--tx:${tx}px;--ty:${ty}px;animation-delay:${delay}s"></div>`;
+  }
+  particles.innerHTML = html;
+
+  document.getElementById('unlockModal').classList.add('show');
+}
+function closeUnlockModal() {
+  document.getElementById('unlockModal').classList.remove('show');
+}
+
+// ============================================================
+// LAND PAGE
+// ============================================================
+function switchLandView(view, el) {
+  document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('landDay').style.display = view === 'day' ? 'block' : 'none';
+  document.getElementById('landMonth').style.display = view === 'month' ? 'block' : 'none';
+  document.getElementById('landYear').style.display = view === 'year' ? 'block' : 'none';
+
+  if (view === 'day') renderDayView();
+  if (view === 'month') renderMonthView();
+  if (view === 'year') renderYearView();
+}
+
+// --- Day View (2.5D Isometric) ---
+function renderDayView() {
+  const d = today();
+  const todayTrees = state.trees.filter(t => t.date === d);
+
+  // Date label
+  const dateObj = new Date();
+  const weekdays = ['日','一','二','三','四','五','六'];
+  document.getElementById('dayDate').textContent =
+    `${d.replace(/-/g,'.')}  星期${weekdays[dateObj.getDay()]}`;
+
+  // Grid (6x6 = 36 cells) with isometric depth
+  const grid = document.getElementById('landGrid');
+  let html = '';
+  for (let i = 0; i < 36; i++) {
+    const row = Math.floor(i / 6);
+
+    if (i < todayTrees.length) {
+      const tree = todayTrees[i];
+      const treeName = tree.dead ? '枯树' : (getTreeDef(tree.type)?.name || '树');
+      const svgHtml = getTreeSvg(tree.type, tree.dead);
+      const swayClass = tree.dead ? '' : (i === 0 ? ' tree-pop' : ' tree-sway');
+      html += `<div class="land-cell has-tree ${tree.dead?'dead':''}" title="${treeName}">
+        <div class="tree-ground-shadow"></div>
+        <div class="tree-on-cell"><div class="${swayClass}">${svgHtml}</div></div>
+      </div>`;
+    } else {
+      // Empty cell with small grass accents
+      const dots = [];
+      const n = 2 + Math.floor(Math.random() * 3);
+      for (let g = 0; g < n; g++) {
+        const gx = 15 + Math.random() * 70;
+        const gy = 25 + Math.random() * 55;
+        dots.push(`<div class="cell-grass-dot" style="left:${gx}%;top:${gy}%"></div>`);
+      }
+      html += `<div class="land-cell empty">${dots.join('')}</div>`;
+    }
+  }
+  grid.innerHTML = html;
+
+  // Summary
+  const alive = todayTrees.filter(t => !t.dead).length;
+  const dead = todayTrees.filter(t => t.dead).length;
+  const minutes = state.history[d]?.minutes || 0;
+  document.getElementById('daySummary').innerHTML =
+    `今日花园：已种 <strong>${alive}</strong> 棵树${dead > 0 ? `，<strong>${dead}</strong> 棵枯萎` : ''} · 专注 <strong>${minutes}</strong> 分钟`;
+
+  // Generate ambient floating particles
+  const particles = document.getElementById('landParticles');
+  if (particles && alive > 0) {
+    const colors = ['#a1d494','#8cb870','#f5e6b8','#c8e6c0'];
+    let phtml = '';
+    const count = Math.min(alive * 2, 12);
+    for (let p = 0; p < count; p++) {
+      const x = 5 + Math.random() * 90;
+      const y = 5 + Math.random() * 90;
+      const dx = (Math.random() - 0.5) * 40;
+      const dy = -20 - Math.random() * 30;
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      const delay = Math.random() * 6;
+      const dur = 4 + Math.random() * 4;
+      const isLeaf = Math.random() > 0.5;
+      phtml += `<div class="land-particle ${isLeaf ? 'leaf-particle' : 'sparkle-particle'}"
+        style="left:${x}%;top:${y}%;--dx:${dx}px;--dy:${dy}px;
+        animation-delay:${delay}s;animation-duration:${dur}s;
+        ${isLeaf ? `background:${color}` : ''}"></div>`;
+    }
+    particles.innerHTML = phtml;
+  } else if (particles) {
+    particles.innerHTML = '';
+  }
+}
+
+// --- Month View (2.5D Land) ---
+function renderMonthView() {
+  const year = viewYear;
+  const month = viewMonth;
+
+  document.getElementById('monthLabel').textContent = `${year}年${month+1}月`;
+
+  // Weekday headers
+  const weekdays = ['一','二','三','四','五','六','日'];
+  document.getElementById('monthWeekdays').innerHTML =
+    weekdays.map(w => `<div class="weekday-label">${w}</div>`).join('');
+
+  // Calculate grid
+  const firstDay = new Date(year, month, 1);
+  let startDow = firstDay.getDay(); // 0=Sun
+  startDow = startDow === 0 ? 6 : startDow - 1; // Convert to Mon=0
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  const todayStr = today();
+  let html = '';
+  // Empty cells before first day
+  for (let i = 0; i < startDow; i++) {
+    html += `<div class="month-cell empty-cell"></div>`;
+  }
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const hist = state.history[dateStr];
+    const treeCount = hist ? hist.trees || 0 : 0;
+    const deadCount = hist ? hist.deadTrees || 0 : 0;
+    const isToday = dateStr === todayStr;
+
+    // Get actual trees for this date to show real tree types
+    const dayTrees = state.trees.filter(t => t.date === dateStr);
+
+    if (treeCount > 0 || deadCount > 0) {
+      // Determine which tree SVGs to show (up to 3 for visual density)
+      const aliveTrees = dayTrees.filter(t => !t.dead);
+      const deadTrees = dayTrees.filter(t => t.dead);
+      let treeHtml = '';
+
+      if (aliveTrees.length > 0) {
+        // Show up to 2 alive trees + 1 dead tree indicator
+        const showCount = Math.min(aliveTrees.length, 2);
+        for (let ti = 0; ti < showCount; ti++) {
+          const svgHtml = getTreeSvg(aliveTrees[ti].type, false);
+          const offset = ti === 0 ? 'left:5%;width:55%' : 'right:5%;width:45%';
+          treeHtml += `<div class="month-tree-on-cell" style="${offset}"><div class="tree-sway">${svgHtml}</div></div>`;
+        }
+        if (aliveTrees.length > 2) {
+          // Extra trees indicator - denser green
+          treeHtml += `<div style="position:absolute;bottom:2px;right:2px;font-size:7px;color:var(--primary);font-weight:700;z-index:3;background:rgba(255,255,255,0.7);border-radius:3px;padding:0 2px">+${aliveTrees.length - 2}</div>`;
+        }
+      }
+      if (deadCount > 0) {
+        const deadSvg = getTreeSvg('oak', true);
+        treeHtml += `<div class="month-tree-on-cell" style="right:0;width:30%;opacity:.7"><div>${deadSvg}</div></div>`;
+      }
+
+      // Ground shadow for trees
+      const shadowHtml = treeCount > 0 ? `<div style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);width:20px;height:5px;background:rgba(0,0,0,0.05);border-radius:50%;filter:blur(1px);z-index:1"></div>` : '';
+
+      const cellClass = deadCount > 0 && treeCount === 0 ? 'dead-cell' : 'has-trees';
+      html += `<div class="month-cell ${cellClass} ${isToday?'today':''}" title="${dateStr}: ${treeCount}棵树${deadCount > 0 ? `，${deadCount}棵枯萎` : ''}">
+        <span class="cell-date">${d}</span>
+        ${shadowHtml}
+        ${treeHtml}
+      </div>`;
+    } else {
+      // Empty cell with small grass
+      const grassDots = [];
+      const n = 1 + Math.floor(Math.random() * 2);
+      for (let g = 0; g < n; g++) {
+        const gx = 20 + Math.random() * 60;
+        const gy = 35 + Math.random() * 40;
+        grassDots.push(`<div class="cell-grass-mini" style="left:${gx}%;top:${gy}%"></div>`);
+      }
+      html += `<div class="month-cell ${isToday?'today':''}">
+        <span class="cell-date">${d}</span>
+        ${grassDots.join('')}
+      </div>`;
+    }
+  }
+  document.getElementById('monthGrid').innerHTML = html;
+
+  // Month stats
+  let monthTrees = 0, monthMin = 0, monthDays = 0;
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const hist = state.history[dateStr];
+    if (hist && hist.trees > 0) {
+      monthTrees += hist.trees;
+      monthMin += hist.minutes || 0;
+      monthDays++;
+    }
+  }
+  document.getElementById('monthStats').innerHTML = `
+    <div class="month-stat"><div class="month-stat-val">${monthTrees}</div><div class="month-stat-label">棵树</div></div>
+    <div class="month-stat"><div class="month-stat-val">${monthMin}</div><div class="month-stat-label">分钟</div></div>
+    <div class="month-stat"><div class="month-stat-val">${monthDays}</div><div class="month-stat-label">天</div></div>
+  `;
+}
+
+function changeMonth(delta) {
+  viewMonth += delta;
+  if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+  if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+  renderMonthView();
+}
+
+// --- Year View (2.5D Land) ---
+function renderYearView() {
+  const year = new Date().getFullYear();
+  document.getElementById('yearLabel').textContent = `${year} 年度生态圈`;
+
+  let yearTrees = 0, yearMin = 0, yearDays = 0;
+  for (const k in state.history) {
+    if (k.startsWith(year.toString())) {
+      yearTrees += state.history[k].trees || 0;
+      yearMin += state.history[k].minutes || 0;
+      if (state.history[k].trees > 0) yearDays++;
+    }
+  }
+
+  // Deserts saved (every 100 trees)
+  const deserts = Math.floor(yearTrees / 100);
+
+  document.getElementById('yearHero').innerHTML = `
+    <div class="year-hero-number">${yearTrees}</div>
+    <div class="year-hero-text">
+      ${year}年，你共种下了 <strong>${yearTrees}</strong> 棵树<br>
+      累计专注 <strong>${yearMin}</strong> 分钟<br>
+      ${deserts > 0 ? `拯救了 <strong>${deserts}</strong> 片荒漠 🏜️→🌳` : '坚持专注，拯救荒漠！'}
+    </div>
+  `;
+
+  // 12 month cards with mini 2.5D lands
+  let html = '';
+  for (let m = 0; m < 12; m++) {
+    let mTrees = 0, mMin = 0;
+    const daysInMonth = new Date(year, m + 1, 0).getDate();
+    const firstDay = new Date(year, m, 1);
+    let startDow = firstDay.getDay();
+    startDow = startDow === 0 ? 6 : startDow - 1;
+
+    // Build mini 7x5 grid for this month
+    let miniGridHtml = '';
+    // Empty cells before first day
+    for (let i = 0; i < startDow; i++) {
+      miniGridHtml += `<div class="year-cell empty-year"></div>`;
+    }
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateStr = `${year}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const hist = state.history[dateStr];
+      const tc = hist ? hist.trees || 0 : 0;
+      if (hist) { mTrees += hist.trees || 0; mMin += hist.minutes || 0; }
+
+      let cellClass = '';
+      let dotHtml = '';
+      if (tc >= 4) {
+        cellClass = 'has-tree-full';
+        // Show a tiny tree dot
+        dotHtml = `<div class="yt-dot"><svg viewBox="0 0 10 14"><path d="M5 0L3 5L7 5Z" fill="#2d8a3e"/><rect x="4" y="5" width="2" height="4" fill="#8B6914"/></svg></div>`;
+      } else if (tc >= 2) {
+        cellClass = 'has-tree-heavy';
+        dotHtml = `<div class="yt-dot"><svg viewBox="0 0 10 14"><path d="M5 2L3 6L7 6Z" fill="#3a9e4f"/><rect x="4" y="6" width="2" height="3" fill="#8B6914"/></svg></div>`;
+      } else if (tc >= 1) {
+        cellClass = 'has-tree';
+        dotHtml = `<div class="yt-dot"><svg viewBox="0 0 10 14"><circle cx="5" cy="6" r="2.5" fill="#4ab85f"/><rect x="4.5" y="8" width="1" height="2" fill="#5a8c3f"/></svg></div>`;
+      }
+      miniGridHtml += `<div class="year-cell ${cellClass}">${dotHtml}</div>`;
+    }
+    // Fill remaining cells to complete the grid
+    const totalCells = startDow + daysInMonth;
+    const rows = Math.ceil(totalCells / 7);
+    const remaining = rows * 7 - totalCells;
+    for (let i = 0; i < remaining; i++) {
+      miniGridHtml += `<div class="year-cell empty-year"></div>`;
+    }
+
+    html += `<div class="year-month-card">
+      <div class="year-month-name">${m+1}月</div>
+      <div class="year-month-land">
+        <div class="year-month-land-grid">${miniGridHtml}</div>
+      </div>
+      <div class="year-month-trees">${mTrees}</div>
+      <div class="year-month-min">${mMin}分钟</div>
+    </div>`;
+  }
+  document.getElementById('yearMonthsGrid').innerHTML = html;
+}
+
+function renderLand() {
+  renderDayView();
+  renderMonthView();
+  renderYearView();
+}
+
+// ============================================================
+// STATS PAGE
+// ============================================================
+function renderStats() {
+  const d = today();
+  const h = state.history[d] || { trees:0, minutes:0, deadTrees:0 };
+
+  // Streak
+  let streak = 0;
+  let check = new Date();
+  while (true) {
+    const key = check.toISOString().slice(0,10);
+    if (state.history[key] && state.history[key].trees > 0) {
+      streak++;
+      check.setDate(check.getDate() - 1);
+    } else break;
+  }
+
+  // Totals
+  let totalTrees = 0, totalMin = 0, totalDead = 0;
+  for (const k in state.history) {
+    totalTrees += state.history[k].trees || 0;
+    totalMin += state.history[k].minutes || 0;
+    totalDead += state.history[k].deadTrees || 0;
+  }
+
+  document.getElementById('statsTodayLabel').textContent = `今天 · ${d.slice(5).replace('-','/')}`;
+  document.getElementById('statTodayTrees').textContent = h.trees;
+  document.getElementById('statTodayMin').textContent = h.minutes;
+  document.getElementById('statStreak').textContent = streak;
+  document.getElementById('statTotalTrees').textContent = totalTrees;
+  document.getElementById('statTotalMin').textContent = totalMin;
+  document.getElementById('statDeadTrees').textContent = totalDead;
+  document.getElementById('statUnlocked').textContent = state.unlockedTrees.length + '/' + TREE_TYPES.length;
+
+  // Achievements grid
+  const grid = document.getElementById('achievementsGrid');
+  grid.innerHTML = TREE_TYPES.map(t => {
+    const unlocked = isTreeUnlocked(t.id);
+    return `<div class="achievement-card ${unlocked?'unlocked':'locked'}">
+      <div class="achievement-icon">${t.svg.replace('viewBox="0 0 40 40"','viewBox="0 0 40 40" width="32" height="32"')}</div>
+      <div class="achievement-info">
+        <div class="achievement-name">${t.name}</div>
+        <div class="achievement-desc">${unlocked ? t.desc : `累计专注 ${t.unlockMinutes} 分钟解锁`}</div>
+      </div>
+      <div>${unlocked
+        ? '<span class="achievement-check">✓</span>'
+        : '<span class="achievement-lock">🔒</span>'
+      }</div>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ============================================================
+// RESET DATA
+// ============================================================
+function confirmResetData() {
+  if (confirm('确定要清除所有数据吗？这将删除你的所有树木和统计记录。')) {
+    state.trees = [];
+    state.history = {};
+    state.totalFocusMinutes = 0;
+    state.unlockedTrees = ['grass','oak'];
+    state.seenUnlocks = [];
+    state.selectedTree = 'oak';
+    localStorage.removeItem('focusForestV2');
+    save();
+    renderStats();
+    renderLand();
+    updateSessionInfo();
+    updateSeedSelector();
+    showToast('所有数据已清除');
+  }
+}
+
+// ============================================================
+// MOBILE APIs: Wake Lock, Notification, Vibration
+// ============================================================
+let wakeLock = null;
+
+async function requestWakeLock() {
+  try {
+    if ('wakeLock' in navigator) {
+      wakeLock = await navigator.wakeLock.request('screen');
+      wakeLock.addEventListener('release', () => { wakeLock = null; });
+    }
+  } catch (e) { /* wake lock not available */ }
+}
+
+function releaseWakeLock() {
+  if (wakeLock) {
+    wakeLock.release();
+    wakeLock = null;
+  }
+}
+
+// Re-acquire wake lock when page becomes visible again
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && state.running) {
+    requestWakeLock();
+  }
+});
+
+let notifPermissionAsked = false;
+function requestNotificationPermission() {
+  if (notifPermissionAsked) return;
+  if ('Notification' in window && Notification.permission === 'default') {
+    notifPermissionAsked = true;
+    Notification.requestPermission();
+  }
+}
+
+function sendNotification(title, body) {
+  if ('Notification' in window && Notification.permission === 'granted') {
+    try {
+      new Notification(title, {
+        body: body,
+        icon: '/icon-192.png',
+        badge: '/icon-192.png',
+        tag: 'focus-forest-timer'
+      });
+    } catch (e) { /* notification failed silently */ }
+  }
+}
+
+// ============================================================
+// INIT
+// ============================================================
+load();
+document.getElementById('focusMin').value = state.focusMin;
+document.getElementById('breakMin').value = state.breakMin;
+state.remaining = state.focusMin * 60;
+state.total = state.focusMin * 60;
+updateTimerDisplay();
+updateGrowingPlant();
+updateModeUI();
+updateSessionInfo();
+updateSeedSelector();
+
+// Electron integration
+const isElectron = typeof window.electronAPI !== 'undefined';
+if (isElectron) {
+  document.getElementById('titlebar').classList.add('visible');
+  window.electronAPI.onTrayToggle(() => toggleTimer());
+  window.electronAPI.onTrayReset(() => resetTimer());
+}
+
+const _origUpdateTimerDisplay = updateTimerDisplay;
+updateTimerDisplay = function() {
+  _origUpdateTimerDisplay();
+  if (isElectron) {
+    const m = Math.floor(state.remaining / 60);
+    const s = state.remaining % 60;
+    const modeStr = state.mode === 'focus' ? '专注' : '休息';
+    window.electronAPI.updateTrayTitle(
+      `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')} ${modeStr} | 专注森林`
+    );
+  }
+};
+
+// PWA Service Worker registration
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
