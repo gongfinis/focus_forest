@@ -1034,12 +1034,20 @@ body{
     -webkit-tap-highlight-color: transparent;
   }
   /* Timer page adjustments */
-  .timer-ring-wrap { margin: 8px auto 4px; }
+  .timer-ring-wrap { 
+    margin: 16px auto 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
   .timer-ring-svg { width: 180px; height: 180px; }
-  .growing-plant { 
-    width: 98px; 
-    height: 98px;
+  .growing-plant {
+    position: absolute;
+    top: 50%;
+    left: 50%;
     transform: translate(-50%, -50%);
+    width: 98px;
+    height: 98px;
   }
   .timer-time { font-size: 36px; }
   .controls { gap: 8px; }
