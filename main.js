@@ -38,7 +38,7 @@ function createWindow() {
       mainWindow.hide();
       if (tray) {
         tray.displayBalloon?.({
-          title: '专注森林',
+          title: '专注丛林',
           content: '应用已最小化到系统托盘'
         });
       }
@@ -58,7 +58,7 @@ function createTray() {
 
   const contextMenu = Menu.buildFromTemplate([
     {
-      label: '专注森林',
+      label: '专注丛林',
       enabled: false
     },
     { type: 'separator' },
@@ -97,7 +97,7 @@ function createTray() {
     }
   ]);
 
-  tray.setToolTip('专注森林 - 番茄钟');
+  tray.setToolTip('专注丛林 - 番茄钟');
   tray.setContextMenu(contextMenu);
 
   tray.on('click', () => {

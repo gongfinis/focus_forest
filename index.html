@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-<title>专注森林 - Focus Forest</title>
+<title>专注丛林 - Focus Jungle</title>
 <meta name="theme-color" content="#154212">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="专注森林">
+<meta name="apple-mobile-web-app-title" content="专注丛林">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <style>
@@ -317,130 +317,101 @@ body{
   font-size:13px;color:var(--on-surface-variant);
   text-align:center;margin-bottom:6px;font-weight:500;
 }
+/* Shared isometric land wrapper */
 .iso-land-wrap{
-  perspective:900px;
-  perspective-origin:50% 28%;
-  display:flex;justify-content:center;
-  padding:20px 10px 30px;
+  display:flex;justify-content:center;align-items:center;
+  padding:30px 10px 30px;
   position:relative;
   overflow:visible;
+  background:radial-gradient(ellipse at 50% 45%,#1d5043 0%,#143d33 35%,#0e2e26 65%,#092420 100%);
+  border-radius:var(--radius-lg);
+  min-height:380px;
 }
-.iso-land-wrap::before{
-  content:'';position:absolute;
-  bottom:5px;left:8%;right:8%;height:30px;
-  background:radial-gradient(ellipse,rgba(139,115,85,0.13) 0%,transparent 70%);
-  filter:blur(10px);pointer-events:none;
-}
-.iso-land-wrap::after{
-  content:'';position:absolute;
-  top:0;left:5%;right:5%;height:50px;
-  background:linear-gradient(to bottom,var(--surface) 0%,rgba(251,249,245,0.6) 40%,transparent 100%);
-  pointer-events:none;z-index:10;border-radius:var(--radius-lg);
-}
+.iso-land-wrap::before{content:none}
+.iso-land-wrap::after{content:none}
+/* Isometric diamond land - 2D projected approach */
 .land-grid{
-  display:grid;grid-template-columns:repeat(6,56px);gap:4px;
-  transform:rotateX(55deg);
-  transform-style:preserve-3d;
   position:relative;
-  padding:22px;
-  border-radius:16px;
-  background:
-    radial-gradient(ellipse at 25% 15%,rgba(161,212,148,0.12) 0%,transparent 40%),
-    radial-gradient(ellipse at 75% 75%,rgba(161,212,148,0.07) 0%,transparent 30%),
-    radial-gradient(ellipse at 50% 50%,rgba(200,180,140,0.3) 0%,transparent 60%),
-    linear-gradient(135deg,#d8ceae 0%,#c8be9e 50%,#bfb590 100%);
-  box-shadow:
-    0 20px 50px rgba(139,115,85,0.22),
-    0 8px 16px rgba(139,115,85,0.1),
-    inset 0 1px 2px rgba(255,255,255,0.4),
-    inset 0 -2px 8px rgba(139,115,85,0.08);
-  border:2px solid rgba(139,115,85,0.18);
+  width:280px;
+  height:160px;
+  overflow:visible;
 }
+/* Diamond top face (grass) */
 .land-grid::before{
-  content:'';position:absolute;inset:0;
-  border-radius:14px;
+  content:'';
+  position:absolute;
+  top:0;left:0;right:0;
+  height:100%;
   background:
-    repeating-conic-gradient(rgba(0,0,0,.012) 0% 25%,transparent 0% 50%) 0 0/16px 16px,
-    radial-gradient(circle at 20% 40%,rgba(161,212,148,0.06) 0%,transparent 8%),
-    radial-gradient(circle at 60% 20%,rgba(161,212,148,0.04) 0%,transparent 6%),
-    radial-gradient(circle at 80% 65%,rgba(161,212,148,0.05) 0%,transparent 7%);
-  pointer-events:none;z-index:0;
+    radial-gradient(circle at 30% 40%,#c8f06e 0%,transparent 35%),
+    radial-gradient(circle at 70% 60%,#8ccf52 0%,transparent 30%),
+    radial-gradient(circle at 55% 25%,#b5e84d 0%,transparent 25%),
+    linear-gradient(160deg,#b5e550 0%,#8bc34a 30%,#6aad3a 60%,#5a9a32 100%);
+  clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);
+  z-index:1;
 }
+/* Soil faces hidden */
+.land-grid::after{display:none}
+.land-grid-soil-left{display:none}
+/* No corner needed with 2D approach */
+.land-grid-soil-corner{display:none}
+/* Entity cells positioned within the diamond via isometric coordinate mapping */
 .land-cell{
-  width:56px;height:56px;
-  position:relative;
-  transform-style:preserve-3d;
-  border-radius:5px;
-  background:linear-gradient(145deg,#e2d8be,#d8ccae);
-  border:1px solid rgba(139,115,85,0.1);
-  box-shadow:
-    0 5px 0 0 #c0b090,
-    0 6px 0 0 #b0a080,
-    0 8px 10px rgba(0,0,0,0.08);
-  transition:all .25s ease;
+  position:absolute;
+  width:60px;
+  height:60px;
+  transform:translate(-50%,-50%);
+  transition:transform .3s ease, left 2.8s ease-in-out, top 2.8s ease-in-out;
+  z-index:2;
 }
-.land-cell:hover{
-  transform:translateZ(5px);
-  box-shadow:
-    0 10px 0 0 #c0b090,
-    0 11px 0 0 #b0a080,
-    0 14px 20px rgba(0,0,0,0.12);
-}
-.land-cell.has-tree{
-  background:linear-gradient(145deg,#dce6ce,#d2dcc2);
-  border-color:rgba(74,158,79,0.12);
-  box-shadow:
-    0 5px 0 0 #b0c098,
-    0 6px 0 0 #a0b088,
-    0 8px 10px rgba(0,0,0,0.08);
-}
-.land-cell.has-tree:hover{
-  box-shadow:
-    0 10px 0 0 #b0c098,
-    0 11px 0 0 #a0b088,
-    0 14px 20px rgba(0,0,0,0.12);
-}
-.land-cell.empty{
-  background:linear-gradient(145deg,#ddd3b5,#d5cba8);
-  box-shadow:
-    0 4px 0 0 #c0b090,
-    0 5px 0 0 #b0a080,
-    0 6px 8px rgba(0,0,0,0.05);
-}
+.land-cell:hover{transform:translate(-50%,-50%) scale(1.06)}
+.land-cell.has-tree,
+.land-cell.has-animal,
+.land-cell.empty,
 .land-cell.dead{
-  background:linear-gradient(145deg,#d5cfc0,#ccc5b5);
-  border-color:rgba(139,115,85,0.15);
-  box-shadow:
-    0 5px 0 0 #b0a898,
-    0 6px 0 0 #a09888,
-    0 8px 10px rgba(0,0,0,0.08);
+  background:transparent;
+  border:none;
+  box-shadow:none;
 }
-/* Tree on tile - counter-rotated to stand upright */
+.land-cell.dead{opacity:.78}
+.land-cell.is-roaming{z-index:3}
+
+/* Entity sprite */
 .tree-on-cell{
   position:absolute;
-  left:-15%;right:-15%;bottom:0;height:250%;
-  display:flex;align-items:flex-end;justify-content:center;
-  transform:rotateX(-55deg);
+  left:50%;
+  bottom:0;
+  width:80px;
+  height:100px;
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  transform:translateX(-50%);
   transform-origin:bottom center;
-  z-index:2;pointer-events:none;
+  z-index:2;
+  pointer-events:none;
 }
-/* Tree ground shadow on tile surface */
+/* Entity ground shadow on grass */
 .tree-ground-shadow{
   position:absolute;
-  bottom:8px;left:50%;
+  bottom:2px;
+  left:50%;
   transform:translateX(-50%);
-  width:28px;height:8px;
-  background:rgba(0,0,0,0.07);
+  width:32px;
+  height:10px;
+  background:rgba(34,70,29,0.22);
   border-radius:50%;
   filter:blur(2px);
-  z-index:1;pointer-events:none;
+  z-index:1;
+  pointer-events:none;
 }
 .tree-on-cell svg{
-  width:80%;height:45%;
-  filter:drop-shadow(1px 3px 4px rgba(0,0,0,0.2));
+  width:100%;
+  height:100%;
+  filter:drop-shadow(0 2px 4px rgba(0,0,0,0.22));
   transition:transform .3s ease;
 }
-.land-cell:hover .tree-on-cell svg{transform:scale(1.08)}
+.land-cell:hover .tree-on-cell svg{transform:scale(1.06)}
 .land-cell.dead .tree-on-cell svg{
   filter:saturate(0.3) brightness(0.8) drop-shadow(1px 2px 3px rgba(0,0,0,0.15));
 }
@@ -508,7 +479,7 @@ body{
 }
 .day-summary strong{color:var(--primary);font-weight:600}
 
-/* Month View - 2.5D Land */
+/* Month View - Isometric Land */
 .month-view{display:none}
 .month-nav{
   display:flex;align-items:center;justify-content:center;gap:16px;
@@ -525,144 +496,54 @@ body{
   font-family:var(--font-serif);font-size:16px;font-weight:600;
   color:var(--on-surface);
 }
-.month-weekdays{
-  display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px;
-}
-.weekday-label{
-  text-align:center;font-size:10px;color:var(--outline);
-  font-weight:600;letter-spacing:0.5px;
-}
-/* 2.5D month land container */
+/* Month land uses shared .iso-land-wrap style */
 .month-land-wrap{
-  perspective:600px;
-  perspective-origin:50% 30%;
-  display:flex;justify-content:center;
-  padding:10px 4px 16px;
+  display:flex;justify-content:center;align-items:center;
+  padding:30px 10px 50px;
   position:relative;
   overflow:visible;
+  background:radial-gradient(ellipse at 50% 45%,#1d5043 0%,#143d33 35%,#0e2e26 65%,#092420 100%);
+  border-radius:var(--radius-lg);
+  min-height:380px;
 }
 .month-land-wrap::before{
   content:'';position:absolute;
-  bottom:0;left:10%;right:10%;height:20px;
-  background:radial-gradient(ellipse,rgba(139,115,85,0.1) 0%,transparent 70%);
-  filter:blur(8px);pointer-events:none;
+  bottom:8px;left:20%;right:20%;height:30px;
+  background:radial-gradient(ellipse,rgba(0,0,0,0.2) 0%,transparent 70%);
+  filter:blur(10px);pointer-events:none;
 }
-.month-land-wrap::after{
-  content:'';position:absolute;
-  top:0;left:3%;right:3%;height:30px;
-  background:linear-gradient(to bottom,var(--surface) 0%,rgba(251,249,245,0.5) 50%,transparent 100%);
-  pointer-events:none;z-index:10;
-}
-.month-grid{
-  display:grid;grid-template-columns:repeat(7,44px);gap:3px;
-  transform:rotateX(50deg);
-  transform-style:preserve-3d;
+.month-land-grid{
   position:relative;
-  padding:14px;
-  border-radius:12px;
+  width:300px;
+  height:172px;
+  overflow:visible;
+}
+.month-land-grid::before{
+  content:'';
+  position:absolute;
+  top:0;left:0;right:0;
+  height:100%;
   background:
-    radial-gradient(ellipse at 30% 20%,rgba(161,212,148,0.08) 0%,transparent 40%),
-    linear-gradient(135deg,#ddd3b5 0%,#cfc5a5 50%,#c5bb95 100%);
-  box-shadow:
-    0 14px 36px rgba(139,115,85,0.18),
-    0 4px 10px rgba(139,115,85,0.08),
-    inset 0 1px 2px rgba(255,255,255,0.3);
-  border:1.5px solid rgba(139,115,85,0.15);
+    radial-gradient(circle at 30% 40%,#c8f06e 0%,transparent 35%),
+    radial-gradient(circle at 70% 60%,#8ccf52 0%,transparent 30%),
+    radial-gradient(circle at 55% 25%,#b5e84d 0%,transparent 25%),
+    linear-gradient(160deg,#b5e550 0%,#8bc34a 30%,#6aad3a 60%,#5a9a32 100%);
+  clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);
+  z-index:1;
 }
-.month-grid::before{
-  content:'';position:absolute;inset:0;
-  border-radius:11px;
-  background:repeating-conic-gradient(rgba(0,0,0,.01) 0% 25%,transparent 0% 50%) 0 0/12px 12px;
-  pointer-events:none;z-index:0;
-}
-.month-cell{
-  width:44px;height:44px;
-  position:relative;
-  transform-style:preserve-3d;
-  border-radius:4px;
-  background:linear-gradient(145deg,#ddd3b5,#d5cba8);
-  border:1px solid rgba(139,115,85,0.08);
-  box-shadow:
-    0 3px 0 0 #c0b090,
-    0 4px 0 0 #b0a080,
-    0 5px 8px rgba(0,0,0,0.05);
-  display:flex;align-items:center;justify-content:center;
-  transition:all .2s ease;
-  cursor:default;
-}
-.month-cell:hover{
-  transform:translateZ(3px);
-  box-shadow:
-    0 6px 0 0 #c0b090,
-    0 7px 0 0 #b0a080,
-    0 10px 14px rgba(0,0,0,0.08);
-}
-.month-cell.empty-cell{
-  background:transparent;
-  box-shadow:none;border:none;
-  transform:none;
-}
-.month-cell.empty-cell:hover{transform:none;box-shadow:none}
-.month-cell.today{
-  border:1.5px solid var(--primary);
-}
-.month-cell.today .cell-date{color:var(--primary);font-weight:700}
-.month-cell .cell-date{
-  position:absolute;top:2px;left:4px;
-  font-size:8px;color:rgba(139,115,85,0.5);
-  font-weight:500;z-index:3;
-  line-height:1;
-}
-/* Tree on month cell */
-.month-tree-on-cell{
+.month-land-grid::after{display:none}
+.month-land-soil-left{display:none}
+/* Month entities on land */
+.month-entity{
   position:absolute;
-  left:-10%;right:-10%;bottom:0;height:220%;
-  display:flex;align-items:flex-end;justify-content:center;
-  transform:rotateX(-50deg);
-  transform-origin:bottom center;
-  z-index:2;pointer-events:none;
+  transform:translate(-50%,-50%);
+  z-index:2;
+  pointer-events:none;
 }
-.month-tree-on-cell svg{
-  width:75%;height:40%;
-  filter:drop-shadow(0.5px 2px 3px rgba(0,0,0,0.15));
-  transition:transform .2s;
+.month-entity svg{
+  filter:drop-shadow(0.5px 1.5px 2px rgba(0,0,0,0.18));
 }
-.month-cell:hover .month-tree-on-cell svg{transform:scale(1.06)}
-/* Month cell with trees - green tint */
-.month-cell.has-trees{
-  background:linear-gradient(145deg,#d8e2ca,#cfd9be);
-  border-color:rgba(74,158,79,0.1);
-  box-shadow:
-    0 3px 0 0 #b0c098,
-    0 4px 0 0 #a0b088,
-    0 5px 8px rgba(0,0,0,0.05);
-}
-.month-cell.dead-cell{
-  background:linear-gradient(145deg,#d5cfc0,#ccc5b5);
-  box-shadow:
-    0 3px 0 0 #b0a898,
-    0 4px 0 0 #a09888,
-    0 5px 8px rgba(0,0,0,0.05);
-}
-/* Month cell mini grass */
-.month-cell .cell-grass-mini{
-  position:absolute;
-  width:1px;height:3px;
-  background:#8cb870;
-  border-radius:0 0 0.5px 0.5px;
-  z-index:1;opacity:.3;
-}
-/* Tree density levels for multi-tree cells */
-.month-tree-cluster{
-  position:absolute;bottom:0;left:0;right:0;top:0;
-  display:flex;align-items:flex-end;justify-content:center;
-  transform:rotateX(-50deg);transform-origin:bottom center;
-  z-index:2;pointer-events:none;
-}
-.month-tree-cluster svg{
-  position:absolute;bottom:0;
-  filter:drop-shadow(0.5px 1px 2px rgba(0,0,0,0.12));
-}
+.month-entity.dead-entity{opacity:.6}
 .month-stats{
   margin-top:8px;display:flex;justify-content:space-around;
 }
@@ -675,105 +556,71 @@ body{
 }
 .month-stat-label{font-size:10px;color:var(--outline);margin-top:2px}
 
-/* Year View - 2.5D Land */
+/* Year View - Isometric Land */
 .year-view{display:none}
 .year-label{
   font-family:var(--font-serif);font-size:18px;font-weight:700;
-  text-align:center;margin-bottom:16px;color:var(--on-surface);
+  text-align:center;margin-bottom:12px;color:var(--on-surface);
 }
-.year-hero{
-  text-align:center;padding:24px 16px;
-  background:linear-gradient(135deg,var(--surface-container-low),var(--surface-container));
+/* Year land uses same dark bg style */
+.year-land-wrap{
+  display:flex;justify-content:center;align-items:center;
+  padding:30px 10px 50px;
+  position:relative;
+  overflow:visible;
+  background:radial-gradient(ellipse at 50% 45%,#1d5043 0%,#143d33 35%,#0e2e26 65%,#092420 100%);
   border-radius:var(--radius-lg);
-  border:1px solid var(--outline-variant);
-  margin-bottom:16px;
+  min-height:380px;
 }
-.year-hero-number{
-  font-family:var(--font-serif);font-size:48px;
-  font-weight:700;color:var(--primary);line-height:1;
+.year-land-wrap::before{
+  content:'';position:absolute;
+  bottom:8px;left:20%;right:20%;height:30px;
+  background:radial-gradient(ellipse,rgba(0,0,0,0.2) 0%,transparent 70%);
+  filter:blur(10px);pointer-events:none;
 }
-.year-hero-text{
-  font-size:14px;color:var(--on-surface-variant);margin-top:8px;
-  line-height:1.6;
-}
-.year-months-grid{
-  display:grid;grid-template-columns:repeat(3,1fr);gap:12px;
-}
-.year-month-card{
-  background:var(--surface-container-low);
-  border-radius:var(--radius-md);padding:10px 8px;
-  border:1px solid var(--outline-variant);
-  text-align:center;
+.year-land-grid{
   position:relative;
-  overflow:hidden;
+  width:320px;
+  height:183px;
+  overflow:visible;
 }
-.year-month-name{
-  font-size:11px;color:var(--outline);font-weight:600;
-  margin-bottom:4px;
-}
-.year-month-trees{
-  font-family:var(--font-serif);font-size:18px;
-  font-weight:700;color:var(--primary);
-}
-.year-month-min{
-  font-size:10px;color:var(--on-surface-variant);
-}
-/* Mini 2.5D land inside year month card */
-.year-month-land{
-  perspective:400px;
-  perspective-origin:50% 25%;
-  display:flex;justify-content:center;
-  padding:4px 2px 8px;
-  margin-top:6px;
-}
-.year-month-land-grid{
-  display:grid;grid-template-columns:repeat(7,8px);gap:1px;
-  transform:rotateX(45deg);
-  transform-style:preserve-3d;
-  padding:4px;
-  border-radius:4px;
-  background:linear-gradient(135deg,#ddd3b5,#cfc5a5);
-  box-shadow:
-    0 6px 14px rgba(139,115,85,0.12),
-    inset 0 0.5px 1px rgba(255,255,255,0.2);
-  border:1px solid rgba(139,115,85,0.12);
-}
-.year-cell{
-  width:8px;height:8px;
-  border-radius:1px;
-  position:relative;
-  background:rgba(139,115,85,0.1);
-  box-shadow:0 1px 0 0 rgba(192,176,144,0.4);
-}
-.year-cell.has-tree{
-  background:#c8e6c0;
-  box-shadow:0 1px 0 0 rgba(176,192,152,0.4);
-}
-.year-cell.has-tree-heavy{
-  background:#8cc580;
-  box-shadow:0 1px 0 0 rgba(140,180,120,0.4);
-}
-.year-cell.has-tree-full{
-  background:#4a9e4f;
-  box-shadow:0 1px 0 0 rgba(74,158,79,0.4);
-}
-/* Tiny tree dots on year cells */
-.year-cell .yt-dot{
+.year-land-grid::before{
+  content:'';
   position:absolute;
-  top:50%;left:50%;
-  transform:translate(-50%,-50%) rotateX(-45deg);
-  transform-origin:center center;
-  width:4px;height:6px;
+  top:0;left:0;right:0;
+  height:100%;
+  background:
+    radial-gradient(circle at 30% 40%,#c8f06e 0%,transparent 35%),
+    radial-gradient(circle at 70% 60%,#8ccf52 0%,transparent 30%),
+    radial-gradient(circle at 55% 25%,#b5e84d 0%,transparent 25%),
+    linear-gradient(160deg,#b5e550 0%,#8bc34a 30%,#6aad3a 60%,#5a9a32 100%);
+  clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);
   z-index:1;
 }
-.year-cell .yt-dot svg{
-  width:100%;height:100%;
-  filter:drop-shadow(0 0.5px 1px rgba(0,0,0,0.1));
+.year-land-grid::after{display:none}
+.year-land-soil-left{display:none}
+/* Year entities on land */
+.year-entity{
+  position:absolute;
+  transform:translate(-50%,-50%);
+  z-index:2;
+  pointer-events:none;
 }
-.year-cell.empty-year{
-  background:transparent;
-  box-shadow:none;
+.year-entity svg{
+  filter:drop-shadow(0.5px 1px 1.5px rgba(0,0,0,0.15));
 }
+.year-entity.dead-entity{opacity:.5}
+.year-stats{
+  margin-top:8px;display:flex;justify-content:space-around;
+}
+.year-stat{
+  text-align:center;
+}
+.year-stat-val{
+  font-family:var(--font-serif);font-size:20px;
+  font-weight:700;color:var(--primary);
+}
+.year-stat-label{font-size:10px;color:var(--outline);margin-top:2px}
 
 /* ========== Stats Page ========== */
 .stats-greeting{
@@ -1057,64 +904,43 @@ body{
   .settings-toggle { min-height: 44px; }
   .setting-row { min-height: 44px; }
 
-  /* ===== 2.5D Land - Day View Mobile ===== */
+  /* ===== Isometric Land - Day View Mobile ===== */
   .iso-land-wrap {
-    perspective: 700px;
-    padding: 12px 4px 20px;
+    padding: 24px 4px 40px;
+    min-height: 300px;
   }
   .land-grid {
-    grid-template-columns: repeat(6, 44px);
-    gap: 3px;
-    padding: 14px;
+    width: 240px;
+    height: 138px;
   }
+  .land-grid::after { display: none; }
+  .land-grid-soil-left { display: none; }
   .land-cell {
-    width: 44px; height: 44px;
-    box-shadow:
-      0 4px 0 0 #c0b090,
-      0 5px 0 0 #b0a080,
-      0 6px 8px rgba(0,0,0,0.06);
+    width: 46px;
+    height: 46px;
   }
-  .land-cell:hover { transform: none; }
-  .land-cell.has-tree:hover,
-  .land-cell.empty:hover { transform: none; }
-  .tree-on-cell { height: 230%; left:-12%; right:-12%; }
-  .tree-on-cell svg { width: 78%; height: 42%; }
-  .tree-ground-shadow { width: 22px; height: 6px; bottom: 6px; }
+  .land-cell:hover { transform: translate(-50%,-50%) scale(1.05); }
+  .tree-on-cell {
+    width: 64px;
+    height: 80px;
+  }
+  .tree-ground-shadow {
+    width: 20px;
+    height: 6px;
+    bottom: 1px;
+  }
 
   /* ===== Month View Mobile ===== */
-  .month-land-wrap {
-    perspective: 500px;
-    padding: 8px 2px 12px;
-  }
-  .month-grid {
-    grid-template-columns: repeat(7, 38px);
-    gap: 2px;
-    padding: 10px;
-  }
-  .month-cell {
-    width: 38px; height: 38px;
-    box-shadow:
-      0 2px 0 0 #c0b090,
-      0 3px 0 0 #b0a080,
-      0 4px 6px rgba(0,0,0,0.04);
-  }
-  .month-cell:hover { transform: none; }
-  .month-cell .cell-date { font-size: 7px; top: 1px; left: 2px; }
-  .month-tree-on-cell { height: 200%; left:-8%; right:-8%; }
-  .month-tree-on-cell svg { width: 70%; height: 36%; }
+  .month-land-wrap { padding: 24px 4px 40px; min-height: 300px; }
+  .month-land-grid { width: 250px; height: 143px; }
+  .month-land-grid::after { display: none; }
+  .month-land-soil-left { display: none; }
 
   /* ===== Year View Mobile ===== */
-  .year-months-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-  }
-  .year-month-land-grid {
-    grid-template-columns: repeat(7, 6px);
-    gap: 0.5px;
-    padding: 3px;
-  }
-  .year-cell { width: 6px; height: 6px; }
-  .year-cell .yt-dot { width: 3px; height: 4px; }
+  .year-land-wrap { padding: 24px 4px 40px; min-height: 300px; }
+  .year-land-grid { width: 270px; height: 154px; }
+  .year-land-grid::after { display: none; }
+  .year-land-soil-left { display: none; }
 
   /* ===== Stats Page Mobile ===== */
   .stats-today-card {
@@ -1142,20 +968,14 @@ body{
 /* Very small screens (iPhone SE, etc.) */
 @media (max-width: 375px) {
   .land-grid {
-    grid-template-columns: repeat(6, 38px);
-    gap: 2px;
-    padding: 10px;
+    width: 200px;
+    height: 115px;
   }
   .land-cell { width: 38px; height: 38px; }
-  .month-grid {
-    grid-template-columns: repeat(7, 34px);
-    gap: 2px;
-    padding: 8px;
-  }
-  .month-cell { width: 34px; height: 34px; }
+  .month-land-grid { width: 200px; height: 115px; }
+  .year-land-grid { width: 210px; height: 120px; }
   .timer-ring-svg { width: 160px; height: 160px; }
   .timer-time { font-size: 32px; }
-  .year-months-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 /* Landscape phone - use side-by-side layout */
@@ -1165,7 +985,14 @@ body{
   body { padding-bottom: 50px; }
   .timer-ring-svg { width: 140px; height: 140px; }
   .timer-time { font-size: 28px; }
-  .iso-land-wrap { perspective: 500px; padding: 6px 4px 10px; }
+  .iso-land-wrap { padding: 10px 4px 20px; min-height: 220px; }
+  .land-grid { width: 180px; height: 103px; }
+  .land-grid::after { display: none; }
+  .land-grid-soil-left { display: none; }
+  .month-land-wrap { padding: 10px 4px 20px; min-height: 220px; }
+  .month-land-grid { width: 180px; height: 103px; }
+  .year-land-wrap { padding: 10px 4px 20px; min-height: 220px; }
+  .year-land-grid { width: 190px; height: 109px; }
 }
 
 </style>
@@ -1174,7 +1001,7 @@ body{
 
 <!-- ========== Titlebar ========== -->
 <div class="titlebar" id="titlebar">
-  <span class="titlebar-title">🌿 专注森林</span>
+  <span class="titlebar-title">🌿 专注丛林</span>
   <div class="titlebar-btns">
     <button class="titlebar-btn" onclick="window.electronAPI&&window.electronAPI.minimize()">&#9725;</button>
     <button class="titlebar-btn close" onclick="window.electronAPI&&window.electronAPI.close()">&#10005;</button>
@@ -1253,7 +1080,7 @@ body{
   <!-- ===== Land Page ===== -->
   <div id="page-land" class="page">
     <div class="land-header">
-      <div class="land-title">我的土地</div>
+      <div class="land-title">我的丛林</div>
       <div class="view-switcher">
         <button class="view-btn active" onclick="switchLandView('day',this)">日</button>
         <button class="view-btn" onclick="switchLandView('month',this)">月</button>
@@ -1265,7 +1092,9 @@ body{
     <div id="landDay" class="day-view">
       <div class="day-date" id="dayDate"></div>
       <div class="iso-land-wrap">
-        <div class="land-grid" id="landGrid"></div>
+        <div class="land-grid" id="landGrid">
+          <div class="land-grid-soil-left"></div>
+        </div>
         <div class="land-particles" id="landParticles"></div>
       </div>
       <div class="day-summary" id="daySummary"></div>
@@ -1278,9 +1107,10 @@ body{
         <span class="month-label" id="monthLabel"></span>
         <button class="month-nav-btn" onclick="changeMonth(1)">›</button>
       </div>
-      <div class="month-weekdays" id="monthWeekdays"></div>
       <div class="month-land-wrap">
-        <div class="month-grid" id="monthGrid"></div>
+        <div class="month-land-grid" id="monthGrid">
+          <div class="month-land-soil-left"></div>
+        </div>
       </div>
       <div class="month-stats" id="monthStats"></div>
     </div>
@@ -1288,8 +1118,12 @@ body{
     <!-- Year View -->
     <div id="landYear" class="year-view">
       <div class="year-label" id="yearLabel"></div>
-      <div class="year-hero" id="yearHero"></div>
-      <div class="year-months-grid" id="yearMonthsGrid"></div>
+      <div class="year-land-wrap">
+        <div class="year-land-grid" id="yearGrid">
+          <div class="year-land-soil-left"></div>
+        </div>
+      </div>
+      <div class="year-stats" id="yearStats"></div>
     </div>
   </div>
 
@@ -1302,7 +1136,7 @@ body{
       <div class="stats-today-vals">
         <div class="stats-today-item">
           <div class="stats-today-num" id="statTodayTrees">0</div>
-          <div class="stats-today-unit">棵树</div>
+          <div class="stats-today-unit">次专注</div>
         </div>
         <div class="stats-today-item">
           <div class="stats-today-num" id="statTodayMin">0</div>
@@ -1321,12 +1155,16 @@ body{
         <div class="stats-card-label">🌳 累计种树</div>
       </div>
       <div class="stats-card">
+        <div class="stats-card-val" id="statTotalAnimals">0</div>
+        <div class="stats-card-label">🐾 累计动物</div>
+      </div>
+      <div class="stats-card">
         <div class="stats-card-val" id="statTotalMin">0</div>
         <div class="stats-card-label">⏳ 累计分钟</div>
       </div>
       <div class="stats-card">
         <div class="stats-card-val" id="statDeadTrees">0</div>
-        <div class="stats-card-label">🥀 枯萎</div>
+        <div class="stats-card-label">🥀 枯萎/逃跑</div>
       </div>
       <div class="stats-card">
         <div class="stats-card-val" id="statUnlocked">0</div>
@@ -1334,7 +1172,7 @@ body{
       </div>
     </div>
 
-    <div class="achievements-title">🌿 树种图鉴</div>
+    <div class="achievements-title">🌿 丛林图鉴</div>
     <div class="achievements-grid" id="achievementsGrid"></div>
 
     <div class="stats-footer">
@@ -1364,7 +1202,7 @@ body{
 <div class="modal-overlay" id="treeModal">
   <div class="modal-sheet">
     <div class="modal-handle"></div>
-    <div class="modal-title">选择树种</div>
+    <div class="modal-title">选择伙伴</div>
     <div class="tree-grid" id="treeGrid"></div>
   </div>
 </div>
@@ -1404,7 +1242,7 @@ body{
   <div class="install-banner-content">
     <div class="install-banner-icon">📱</div>
     <div class="install-banner-text">
-      <strong>安装专注森林</strong>
+      <strong>安装专注丛林</strong>
       <span>添加到主屏幕，随时随地保持专注</span>
     </div>
     <button class="btn btn-primary btn-sm" id="installBtn">安装</button>
@@ -1536,12 +1374,212 @@ const TREE_TYPES = [
 
 const DEAD_TREE_SVG = `<svg viewBox="0 0 40 40"><ellipse cx="20" cy="37" rx="10" ry="3" fill="#8B7355" opacity=".15"/><rect x="18" y="20" width="3.5" height="16" rx="1" fill="#8B7355"/><path d="M20 20 L13 12 M13 12 L9 8 M13 12 L15 6" stroke="#8B7355" stroke-width="2" stroke-linecap="round" fill="none"/><path d="M20 24 L27 16 M27 16 L31 12 M27 16 L25 10" stroke="#8B7355" stroke-width="1.5" stroke-linecap="round" fill="none"/></svg>`;
 
+// ============================================================
+// ANIMAL DEFINITIONS
+// ============================================================
+const ANIMAL_TYPES = [
+  {
+    id:'rhino', name:'犀牛', unlockMinutes:0, growthMode:'big_mammal',
+    desc:'低多边形犀牛，稳重又有力量',
+    svg:`<svg viewBox="0 0 40 40"><ellipse cx="20" cy="36" rx="10" ry="3" fill="#8b7355" opacity=".16"/><polygon points="8,26 18,21 31,23 30,31 17,33" fill="#9c6a3a"/><polygon points="18,21 25,16 32,18 31,24" fill="#87562e"/><polygon points="31,21 35,20 33,24" fill="#f3d7b1"/><polygon points="12,31 14,31 14,35 12,35" fill="#6f4a2a"/><polygon points="23,31 25,31 25,35 23,35" fill="#6f4a2a"/></svg>`
+  },
+  {
+    id:'pig', name:'小猪', unlockMinutes:40, growthMode:'big_mammal',
+    desc:'圆润的低多边形小猪',
+    svg:`<svg viewBox="0 0 40 40"><ellipse cx="20" cy="36" rx="10" ry="3" fill="#8b7355" opacity=".16"/><polygon points="10,27 19,22 31,24 30,31 18,33" fill="#f3c8c8"/><polygon points="19,22 25,18 31,20 31,24" fill="#e9bcbc"/><polygon points="30,25 34,25 34,28 30,29" fill="#e0a8a8"/><circle cx="32.5" cy="26.8" r="0.35" fill="#8a5f5f"/><circle cx="33.4" cy="26.8" r="0.35" fill="#8a5f5f"/></svg>`
+  },
+  {
+    id:'cheetah', name:'猎豹', unlockMinutes:90, growthMode:'land',
+    desc:'轻盈敏捷的低多边形猎豹',
+    svg:`<svg viewBox="0 0 40 40"><ellipse cx="20" cy="36" rx="10" ry="3" fill="#8b7355" opacity=".16"/><polygon points="9,27 18,21 30,23 28,31 16,33" fill="#f3c989"/><polygon points="18,21 24,17 30,19 30,23" fill="#edbe79"/><polygon points="27,24 33,23 35,25 29,26" fill="#edbe79"/><circle cx="24" cy="23" r="0.5" fill="#7b5a2e"/><circle cx="21.5" cy="24" r="0.5" fill="#7b5a2e"/><circle cx="26.3" cy="25.2" r="0.45" fill="#7b5a2e"/></svg>`
+  },
+  {
+    id:'deer', name:'小鹿', unlockMinutes:140, growthMode:'hoof',
+    desc:'优雅的小鹿在草地漫步',
+    svg:`<svg viewBox="0 0 40 40"><ellipse cx="20" cy="36" rx="10" ry="3" fill="#8b7355" opacity=".16"/><polygon points="9,27 17,21 30,23 28,30 15,33" fill="#a16a3d"/><polygon points="17,21 22,14 29,17 30,23" fill="#8f5a31"/><polygon points="22,14 23,8 24,6 25,8 24,14" fill="#6f4425"/><polygon points="24,14 27,9 29,7 28,11 26,15" fill="#6f4425"/><polygon points="13,31 15,31 15,36 13,36" fill="#734829"/><polygon points="20,31 22,31 22,36 20,36" fill="#734829"/></svg>`
+  },
+  {
+    id:'zebra', name:'斑马', unlockMinutes:190, growthMode:'hoof',
+    desc:'黑白条纹的低多边形斑马',
+    svg:`<svg viewBox="0 0 40 40"><ellipse cx="20" cy="36" rx="10" ry="3" fill="#8b7355" opacity=".16"/><polygon points="9,27 18,21 30,23 29,31 17,33" fill="#f5f5f5"/><polygon points="18,21 24,16 30,18 30,23" fill="#ffffff"/><polygon points="12,27 14,26 15,33 13,33" fill="#2f2f2f"/><polygon points="17,24 19,23 20,32 18,32" fill="#2f2f2f"/><polygon points="22,23 24,22 25,31 23,31" fill="#2f2f2f"/><polygon points="27,22 29,21 30,29 28,30" fill="#2f2f2f"/></svg>`
+  },
+  {
+    id:'gorilla', name:'大猩猩', unlockMinutes:250, growthMode:'big_mammal',
+    desc:'厚重轮廓的大猩猩',
+    svg:`<svg viewBox="0 0 40 40"><ellipse cx="20" cy="36" rx="10" ry="3" fill="#8b7355" opacity=".16"/><polygon points="10,28 18,20 27,22 29,31 19,34" fill="#83573a"/><polygon points="18,20 22,15 27,17 27,22" fill="#6f462e"/><polygon points="14,30 17,30 17,35 14,35" fill="#5d3a27"/><polygon points="23,30 26,30 26,35 23,35" fill="#5d3a27"/><polygon points="16,23 20,22 21,26 17,27" fill="#9e7f66"/></svg>`
+  },
+  {
+    id:'hippo', name:'河马', unlockMinutes:320, growthMode:'big_mammal',
+    desc:'扁厚体块的河马',
+    svg:`<svg viewBox="0 0 40 40"><ellipse cx="20" cy="36" rx="10" ry="3" fill="#8b7355" opacity=".16"/><polygon points="8,27 18,22 31,24 30,31 17,33" fill="#8a5b63"/><polygon points="18,22 24,18 31,20 31,24" fill="#7a4e56"/><polygon points="30,25 35,25 34,29 30,29" fill="#f4a4a4"/><polygon points="12,31 14,31 14,35 12,35" fill="#6a454c"/><polygon points="23,31 25,31 25,35 23,35" fill="#6a454c"/></svg>`
+  },
+  {
+    id:'elephant', name:'大象', unlockMinutes:400, growthMode:'big_mammal',
+    desc:'厚重几何感的大象',
+    svg:`<svg viewBox="0 0 40 40"><ellipse cx="20" cy="36" rx="10" ry="3" fill="#8b7355" opacity=".16"/><polygon points="9,27 18,21 30,23 29,31 16,33" fill="#8f949c"/><polygon points="18,21 24,16 30,18 30,23" fill="#7f858d"/><polygon points="29,22 34,23 33,27 29,26" fill="#7a8088"/><polygon points="28,24 31,24 31,30 28,30" fill="#7a8088"/><polygon points="31,25 33,25 35,24 33,27" fill="#f0c9a0"/></svg>`
+  },
+  {
+    id:'boar', name:'野猪', unlockMinutes:490, growthMode:'big_mammal',
+    desc:'棱角分明的野猪',
+    svg:`<svg viewBox="0 0 40 40"><ellipse cx="20" cy="36" rx="10" ry="3" fill="#8b7355" opacity=".16"/><polygon points="9,27 18,22 30,24 29,31 16,33" fill="#6d6368"/><polygon points="18,22 24,18 30,20 30,24" fill="#5f565b"/><polygon points="30,24 34,24 33,28 30,29" fill="#554d51"/><polygon points="31,25 33,25 34,24 33,27" fill="#e6c19c"/></svg>`
+  },
+  {
+    id:'lion', name:'狮子', unlockMinutes:590, growthMode:'land',
+    desc:'雄壮的低多边形狮子',
+    svg:`<svg viewBox="0 0 40 40"><ellipse cx="20" cy="36" rx="10" ry="3" fill="#8b7355" opacity=".16"/><polygon points="9,27 18,22 30,24 29,31 16,33" fill="#e3ab62"/><polygon points="18,22 24,18 30,20 30,24" fill="#d89a4f"/><polygon points="15,23 19,18 24,20 21,24" fill="#9a6a3b"/><polygon points="27,24 32,24 34,26 29,27" fill="#e3ab62"/></svg>`
+  },
+  {
+    id:'giraffe', name:'长颈鹿', unlockMinutes:700, growthMode:'hoof',
+    desc:'高挑轮廓的长颈鹿',
+    svg:`<svg viewBox="0 0 40 40"><ellipse cx="20" cy="36" rx="10" ry="3" fill="#8b7355" opacity=".16"/><polygon points="14,30 18,24 23,26 20,33 15,34" fill="#d8ad67"/><polygon points="20,25 20,14 23,14 23,26" fill="#d8ad67"/><polygon points="21,14 24,11 27,13 25,16" fill="#c59650"/><polygon points="16,32 17.5,32 17.5,36 16,36" fill="#9a7743"/><polygon points="20,33 21.5,33 21.5,36 20,36" fill="#9a7743"/><circle cx="21.3" cy="22" r="0.5" fill="#916b34"/><circle cx="19.7" cy="27" r="0.5" fill="#916b34"/></svg>`
+  },
+  {
+    id:'tiger', name:'白虎', unlockMinutes:820, growthMode:'land',
+    desc:'白底黑纹的低多边形老虎',
+    svg:`<svg viewBox="0 0 40 40"><ellipse cx="20" cy="36" rx="10" ry="3" fill="#8b7355" opacity=".16"/><polygon points="10,27 18,22 30,24 29,31 17,33" fill="#f5f5f5"/><polygon points="18,22 24,18 30,20 30,24" fill="#ffffff"/><polygon points="13,27 15,26 16,32 14,33" fill="#2b2b2b"/><polygon points="18,24 20,23 21,31 19,32" fill="#2b2b2b"/><polygon points="23,23 25,22 26,30 24,31" fill="#2b2b2b"/><polygon points="27,22 29,21 30,28 28,29" fill="#2b2b2b"/></svg>`
+  },
+  {
+    id:'antelope', name:'羚羊', unlockMinutes:960, growthMode:'hoof',
+    desc:'细长身形的羚羊',
+    svg:`<svg viewBox="0 0 40 40"><ellipse cx="20" cy="36" rx="10" ry="3" fill="#8b7355" opacity=".16"/><polygon points="10,28 18,22 29,24 27,31 16,33" fill="#915a34"/><polygon points="18,22 23,16 29,18 29,24" fill="#7f4d2c"/><polygon points="23,16 24,10 25,8 26,10 25,16" fill="#5f391f"/><polygon points="25,16 28,11 30,9 29,12 27,17" fill="#5f391f"/><polygon points="13,31 14.5,31 14.5,35 13,35" fill="#734829"/><polygon points="20,31 21.5,31 21.5,35 20,35" fill="#734829"/></svg>`
+  },
+  {
+    id:'flamingo', name:'火烈鸟', unlockMinutes:1120, growthMode:'bird',
+    desc:'粉色羽翼与细长腿的火烈鸟',
+    svg:`<svg viewBox="0 0 40 40"><ellipse cx="20" cy="36" rx="10" ry="3" fill="#8b7355" opacity=".16"/><polygon points="17,26 22,23 26,25 23,29 18,29" fill="#f266b2"/><polygon points="22,23 24,20 27,21 25,24" fill="#ef4fa8"/><polygon points="25,20 27,18 29,19 27,21" fill="#f266b2"/><polygon points="20,29 21,29 21,35 20,35" fill="#5a5a5a"/><polygon points="22.2,29 23.2,29 23.2,35 22.2,35" fill="#5a5a5a"/></svg>`
+  },
+  {
+    id:'turtle', name:'海龟', unlockMinutes:1300, growthMode:'reptile',
+    desc:'圆润甲壳的低多边形海龟',
+    svg:`<svg viewBox="0 0 40 40"><ellipse cx="20" cy="36" rx="10" ry="3" fill="#8b7355" opacity=".16"/><polygon points="12,28 18,23 25,24 27,29 22,32 15,31" fill="#b39a7a"/><polygon points="18,23 20,21 24,22 25,24" fill="#9a8467"/><polygon points="12,28 10,27 9,29 11,30" fill="#6e8f6b"/><polygon points="25,24 28,23 29,25 26,26" fill="#6e8f6b"/><polygon points="22,32 24,33 25,32 23,31" fill="#6e8f6b"/></svg>`
+  },
+  {
+    id:'whale', name:'白鲸', unlockMinutes:1500, growthMode:'aquatic',
+    desc:'浅色几何体块的白鲸',
+    svg:`<svg viewBox="0 0 40 40"><ellipse cx="20" cy="36" rx="10" ry="3" fill="#8b7355" opacity=".16"/><polygon points="8,28 19,23 30,24 26,30 15,31" fill="#f6f0dc"/><polygon points="30,24 34,22 33,26 29,27" fill="#efe7d0"/><polygon points="26,30 30,32 32,30 28,29" fill="#efe7d0"/></svg>`
+  },
+  {
+    id:'orca', name:'虎鲸', unlockMinutes:1710, growthMode:'aquatic',
+    desc:'黑白撞色的低多边形虎鲸',
+    svg:`<svg viewBox="0 0 40 40"><ellipse cx="20" cy="36" rx="10" ry="3" fill="#8b7355" opacity=".16"/><polygon points="8,28 19,23 31,24 27,30 15,31" fill="#191919"/><polygon points="18,26 22,25 24,27 20,28" fill="#ffffff"/><polygon points="21,23 23,19 25,22" fill="#191919"/><polygon points="26,30 31,33 33,31 28,29" fill="#191919"/></svg>`
+  },
+  {
+    id:'dolphin', name:'海豚', unlockMinutes:1940, growthMode:'aquatic',
+    desc:'流线型的低多边形海豚',
+    svg:`<svg viewBox="0 0 40 40"><ellipse cx="20" cy="36" rx="10" ry="3" fill="#8b7355" opacity=".16"/><polygon points="9,28 19,23 30,24 26,30 15,31" fill="#cfd2d8"/><polygon points="19,23 22,20 26,21 30,24" fill="#b8bcc4"/><polygon points="25,26 27,24 29,26" fill="#aeb3bc"/><polygon points="26,30 31,33 33,31 28,29" fill="#b8bcc4"/></svg>`
+  },
+  {
+    id:'shark', name:'鲨鱼', unlockMinutes:2190, growthMode:'aquatic',
+    desc:'尖锐轮廓的低多边形鲨鱼',
+    svg:`<svg viewBox="0 0 40 40"><ellipse cx="20" cy="36" rx="10" ry="3" fill="#8b7355" opacity=".16"/><polygon points="8,28 19,23 31,24 27,30 15,31" fill="#3f5f79"/><polygon points="19,23 22,18 25,22" fill="#355168"/><polygon points="24,26 27,24 30,26" fill="#355168"/><polygon points="26,30 31,33 33,31 28,29" fill="#355168"/></svg>`
+  },
+  {
+    id:'crocodile', name:'鳄鱼', unlockMinutes:2460, growthMode:'reptile',
+    desc:'贴地而行的低多边形鳄鱼',
+    svg:`<svg viewBox="0 0 40 40"><ellipse cx="20" cy="36" rx="10" ry="3" fill="#8b7355" opacity=".16"/><polygon points="8,29 18,24 32,25 27,30 15,31" fill="#6a9250"/><polygon points="18,24 21,22 25,23 32,25" fill="#5d8445"/><polygon points="27,30 32,32 34,30 29,29" fill="#5d8445"/></svg>`
+  },
+  {
+    id:'manta', name:'蝠鲼', unlockMinutes:2750, growthMode:'aquatic',
+    desc:'展翼滑行的低多边形蝠鲼',
+    svg:`<svg viewBox="0 0 40 40"><ellipse cx="20" cy="36" rx="10" ry="3" fill="#8b7355" opacity=".16"/><polygon points="10,28 20,22 30,28 24,30 16,30" fill="#1f6c9a"/><polygon points="20,22 22,19 24,22 20,24" fill="#16567b"/><polygon points="19,30 21,30 20,34" fill="#16567b"/></svg>`
+  },
+  {
+    id:'owl', name:'猫头鹰', unlockMinutes:3060, growthMode:'bird',
+    desc:'智慧感十足的几何猫头鹰',
+    svg:`<svg viewBox="0 0 40 40"><ellipse cx="20" cy="36" rx="10" ry="3" fill="#8b7355" opacity=".16"/><polygon points="13,30 18,21 26,21 29,30 20,34" fill="#8e6a47"/><polygon points="18,21 20,13 25,14 26,21" fill="#9f7a55"/><polygon points="16,20 12,16 14,13 18,17" fill="#7f5d3d"/><polygon points="24,20 28,16 26,13 22,17" fill="#7f5d3d"/><polygon points="19,16 21,16 20,18" fill="#f5b34a"/></svg>`
+  }
+];
+
+const ESCAPED_ANIMAL_SVG = `<svg viewBox="0 0 40 40"><ellipse cx="20" cy="37" rx="10" ry="3" fill="#8B7355" opacity=".15"/><circle cx="20" cy="20" r="8" fill="#ddd" opacity=".6"/><path d="M14 18 L18 22 M18 18 L14 22" stroke="#999" stroke-width="1.5" stroke-linecap="round"/><path d="M22 18 L26 22 M26 18 L22 22" stroke="#999" stroke-width="1.5" stroke-linecap="round"/><path d="M16 28 Q20 25 24 28" stroke="#999" stroke-width="1.5" fill="none" stroke-linecap="round"/><path d="M26 12 L30 8 M30 8 L32 6" stroke="#aaa" stroke-width="1" stroke-linecap="round" stroke-dasharray="2 2"/><text x="31" y="7" font-size="5" fill="#aaa">💨</text></svg>`;
+
 // Growing stages SVGs for the timer
 const GROWING_STAGES = {
   seed: `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#8B7355" opacity=".25"/><ellipse cx="30" cy="50" rx="8" ry="3" fill="#8B7355" opacity=".4"/><ellipse cx="30" cy="48" rx="5" ry="3.5" fill="#a0845c"/></svg>`,
   sprout: `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#8B7355" opacity=".25"/><ellipse cx="30" cy="50" rx="8" ry="3" fill="#8B7355" opacity=".4"/><rect x="29" y="40" width="2.5" height="10" rx="1" fill="#5a8c3f"/><path d="M30 44 Q24 38 27 42" stroke="#4a7c3f" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>`,
   small: `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#8B7355" opacity=".25"/><ellipse cx="30" cy="50" rx="8" ry="3" fill="#8B7355" opacity=".4"/><rect x="29" y="32" width="2.5" height="18" rx="1" fill="#5a8c3f"/><path d="M30 40 Q22 32 25 38" stroke="#4a7c3f" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M30 36 Q38 28 35 34" stroke="#5a9c4f" stroke-width="2" fill="none" stroke-linecap="round"/><ellipse cx="30" cy="30" rx="8" ry="6" fill="#3a9e4f" opacity=".6"/></svg>`,
   medium: `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#8B7355" opacity=".25"/><ellipse cx="30" cy="50" rx="8" ry="3" fill="#8B7355" opacity=".4"/><rect x="28.5" y="28" width="3" height="22" rx="1" fill="#6a8c3f"/><path d="M30 38 Q20 30 24 36" stroke="#4a7c3f" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M30 34 Q40 26 36 32" stroke="#5a9c4f" stroke-width="2" fill="none" stroke-linecap="round"/><ellipse cx="30" cy="24" rx="12" ry="10" fill="#2d8a3e"/><ellipse cx="24" cy="26" rx="6" ry="5" fill="#3a9e4f"/><ellipse cx="36" cy="26" rx="6" ry="5" fill="#3a9e4f"/></svg>`,
+};
+
+// Growing stages for animals (type-specific, not all start from egg)
+const GROWING_STAGES_ANIMAL = {
+  default: [
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="24,43 30,38 36,43 30,48" fill="#d7ceb8"/></svg>`,
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="22,44 30,35 38,43 30,49" fill="#c6a67f"/><circle cx="31" cy="41" r="1" fill="#232323"/></svg>`,
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="19,44 29,33 41,38 37,48 26,50" fill="#bb8754"/><polygon points="29,33 33,28 38,31 41,38" fill="#9f6a3f"/></svg>`,
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="18,43 30,31 44,36 40,49 27,52" fill="#a66f42"/><polygon points="30,31 35,24 42,27 44,36" fill="#8f5a31"/></svg>`
+  ],
+  land: [
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="22,46 30,41 38,45 34,49 25,50" fill="#c89b6f"/></svg>`,
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="21,45 30,37 40,41 36,49 26,50" fill="#b67f4f"/></svg>`,
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="19,44 30,33 42,38 38,49 27,51" fill="#9f6a3f"/></svg>`,
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="18,43 30,31 44,36 40,49 27,52" fill="#8d5932"/></svg>`
+  ],
+  hoof: [
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="23,46 30,41 37,46 30,49" fill="#d2b38b"/><polygon points="29,41 29,36 31,36 31,41" fill="#b28a60"/></svg>`,
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="21,45 30,37 39,42 36,49 27,50" fill="#c69c6b"/><polygon points="30,37 31,30 33,30 33,37" fill="#9f7549"/></svg>`,
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="20,44 30,34 41,39 38,49 27,51" fill="#b88759"/><polygon points="30,34 31,26 34,26 34,34" fill="#91673f"/></svg>`,
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="18,43 30,31 44,36 40,49 27,52" fill="#a27245"/><polygon points="30,31 32,22 35,22 34,31" fill="#7d5532"/></svg>`
+  ],
+  bird: [
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="25,47 30,43 35,47 30,50" fill="#cfc4b8"/></svg>`,
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="23,46 30,39 37,44 33,50 26,50" fill="#b8a999"/></svg>`,
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="21,45 30,35 39,41 35,50 26,51" fill="#9f8e7b"/></svg>`,
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="19,44 30,32 42,38 38,50 27,52" fill="#867360"/></svg>`
+  ],
+  aquatic: [
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#6f8fb8" opacity=".18"/><polygon points="22,47 31,43 38,45 34,49 26,50" fill="#b8c8d8"/></svg>`,
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#6f8fb8" opacity=".18"/><polygon points="20,46 31,39 40,42 36,49 27,50" fill="#9db2c5"/></svg>`,
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#6f8fb8" opacity=".18"/><polygon points="19,45 31,34 42,38 38,49 27,51" fill="#7e99af"/></svg>`,
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#6f8fb8" opacity=".18"/><polygon points="18,44 31,31 44,36 40,49 27,52" fill="#607f98"/></svg>`
+  ],
+  reptile: [
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="21,47 30,43 39,45 34,49 25,50" fill="#98ae7a"/></svg>`,
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="20,46 30,39 41,42 36,49 26,50" fill="#7f9e60"/></svg>`,
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="19,45 30,35 42,39 38,49 27,51" fill="#68884c"/></svg>`,
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="18,44 30,31 44,36 40,49 27,52" fill="#4f6f39"/></svg>`
+  ],
+  big_mammal: [
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="21,46 30,40 40,43 36,49 26,50" fill="#9a8d83"/></svg>`,
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="20,45 30,37 41,41 37,49 27,50" fill="#8b7d72"/></svg>`,
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="19,44 30,33 42,38 38,49 27,51" fill="#7a6d63"/></svg>`,
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="18,43 30,31 44,36 40,49 27,52" fill="#6b5f56"/></svg>`
+  ],
+  cat: [
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="24,46 29,41 34,46 29,49" fill="#d79f63"/><polygon points="31,46 36,41 41,46 36,49" fill="#cf9358"/></svg>`,
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="22,45 30,37 38,41 35,49 27,50" fill="#d4873e"/><polygon points="30,37 33,32 37,35 38,41" fill="#be6f2e"/></svg>`,
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="19,44 29,33 41,38 38,49 26,51" fill="#ca7a34"/><polygon points="29,33 34,27 40,30 41,38" fill="#ad6327"/></svg>`,
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="18,43 30,31 44,36 40,49 27,52" fill="#b96f2e"/><polygon points="30,31 36,24 43,27 44,36" fill="#9f5a23"/></svg>`
+  ],
+  rabbit: [
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="22,47 30,42 38,47 30,50" fill="#c6b49e"/><polygon points="28,42 28,36 30,36 30,42" fill="#e5d9cb"/><polygon points="31,42 31,36 33,36 33,42" fill="#e5d9cb"/></svg>`,
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="21,45 30,37 39,42 36,49 27,50" fill="#e5dbce"/><polygon points="30,37 31,29 34,30 34,38" fill="#efe6da"/></svg>`,
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="20,44 30,34 41,39 38,49 27,51" fill="#e0d4c6"/><polygon points="30,34 31,24 34,24 34,34" fill="#efe6da"/></svg>`,
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="18,43 30,31 44,36 40,49 27,52" fill="#d9ccbd"/><polygon points="30,31 31,20 34,20 34,31" fill="#efe6da"/></svg>`
+  ],
+  fox: [
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="20,47 28,40 37,44 34,50 25,51" fill="#a27753"/></svg>`,
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="20,45 29,36 40,41 36,49 26,50" fill="#d56e31"/><polygon points="29,36 34,31 39,34 40,41" fill="#ba5b24"/></svg>`,
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="19,44 30,33 42,38 38,49 27,51" fill="#cc652b"/><polygon points="30,33 35,27 41,30 42,38" fill="#ae511f"/></svg>`,
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="18,43 30,31 44,36 40,49 27,52" fill="#c45b24"/><polygon points="30,31 36,24 43,27 44,36" fill="#9d4519"/></svg>`
+  ],
+  hamster: [
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="23,46 30,40 37,46 30,50" fill="#c9a98b"/></svg>`,
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="21,45 30,37 39,42 36,49 27,50" fill="#c49c77"/><polygon points="30,37 33,32 37,35 39,42" fill="#b18662"/></svg>`,
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="20,44 30,34 41,39 38,49 27,51" fill="#b88f6b"/><polygon points="30,34 34,28 40,31 41,39" fill="#a57a56"/></svg>`,
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="18,43 30,31 44,36 40,49 27,52" fill="#ad825d"/><polygon points="30,31 35,24 42,27 44,36" fill="#916b49"/></svg>`
+  ],
+  deer: [
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="24,48 27,42 30,48" fill="#7f5531"/><polygon points="30,48 33,42 36,48" fill="#7f5531"/></svg>`,
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="20,45 29,36 40,41 36,49 26,50" fill="#9f683d"/><polygon points="29,36 34,30 39,33 40,41" fill="#865330"/></svg>`,
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="19,44 30,33 42,38 38,49 27,51" fill="#945e36"/><polygon points="30,33 35,26 41,29 42,38" fill="#7c4d2b"/></svg>`,
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="18,43 30,31 44,36 40,49 27,52" fill="#87542f"/><polygon points="30,31 36,23 43,27 44,36" fill="#6e4526"/></svg>`
+  ],
+  owl: [
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="22,48 30,40 38,48 30,50" fill="#8e7a62"/></svg>`,
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="21,45 30,36 39,42 36,49 27,50" fill="#8b7154"/><polygon points="30,36 33,30 37,32 39,42" fill="#775f45"/></svg>`,
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="20,44 30,34 41,39 38,49 27,51" fill="#84664a"/><polygon points="30,34 34,28 40,31 41,39" fill="#6d543b"/></svg>`,
+    `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="52" rx="14" ry="4" fill="#5b8f47" opacity=".22"/><polygon points="18,43 30,31 44,36 40,49 27,52" fill="#7c6045"/><polygon points="30,31 35,24 42,27 44,36" fill="#674f38"/></svg>`
+  ]
 };
 
 // ============================================================
@@ -1552,11 +1590,12 @@ let state = {
   mode: 'focus',
   running: false, paused: false,
   remaining: 25*60, total: 25*60,
-  selectedTree: 'oak',
-  trees: [],       // { type, date, ts, dead }
-  history: {},     // { 'YYYY-MM-DD': { trees, minutes, deadTrees } }
+  selectedEntity: { category: 'tree', id: 'oak' },
+  entities: [],    // { category, type, date, ts, dead, failed, posX, posY }
+  history: {},     // { 'YYYY-MM-DD': { trees, minutes, deadTrees, animals, escapedAnimals } }
   totalFocusMinutes: 0,
   unlockedTrees: ['grass','oak'],
+  unlockedAnimals: ['rhino'],
   seenUnlocks: [],
 };
 
@@ -1568,21 +1607,23 @@ let viewYear = new Date().getFullYear();
 // PERSISTENCE
 // ============================================================
 function save() {
-  localStorage.setItem('focusForestV2', JSON.stringify(state));
+  localStorage.setItem('focusJungleV3', JSON.stringify(state));
 }
 
 function load() {
   try {
-    const d = JSON.parse(localStorage.getItem('focusForestV2'));
-    if (d && d.trees) {
-      state.focusMin = d.focusMin || 25;
-      state.breakMin = d.breakMin || 5;
-      state.selectedTree = d.selectedTree || 'oak';
-      state.trees = d.trees || [];
-      state.history = d.history || {};
-      state.totalFocusMinutes = d.totalFocusMinutes || 0;
-      state.unlockedTrees = d.unlockedTrees || ['grass','oak'];
-      state.seenUnlocks = d.seenUnlocks || [];
+    // 1. Try loading V3
+    const v3 = JSON.parse(localStorage.getItem('focusJungleV3'));
+    if (v3 && v3.entities) {
+      state.focusMin = v3.focusMin || 25;
+      state.breakMin = v3.breakMin || 5;
+      state.selectedEntity = v3.selectedEntity || { category: 'tree', id: 'oak' };
+      state.entities = (v3.entities || []).map(e => ensureEntityPosition(e));
+      state.history = v3.history || {};
+      state.totalFocusMinutes = v3.totalFocusMinutes || 0;
+      state.unlockedTrees = v3.unlockedTrees || ['grass','oak'];
+      state.unlockedAnimals = v3.unlockedAnimals || ['rhino'];
+      state.seenUnlocks = v3.seenUnlocks || [];
       state.mode = 'focus';
       state.running = false;
       state.paused = false;
@@ -1590,23 +1631,46 @@ function load() {
       state.total = state.focusMin * 60;
       return;
     }
-    // Try migrating from v1 format
+
+    // 2. Try migrating from V2
+    const v2 = JSON.parse(localStorage.getItem('focusForestV2'));
+    if (v2 && v2.trees) {
+      state.focusMin = v2.focusMin || 25;
+      state.breakMin = v2.breakMin || 5;
+      state.selectedEntity = { category: 'tree', id: v2.selectedTree || 'oak' };
+      state.entities = (v2.trees || []).map(t => ensureEntityPosition({
+        category: 'tree', type: t.type, date: t.date, ts: t.ts, dead: t.dead, failed: false
+      }));
+      state.history = v2.history || {};
+      state.totalFocusMinutes = v2.totalFocusMinutes || 0;
+      state.unlockedTrees = v2.unlockedTrees || ['grass','oak'];
+      state.unlockedAnimals = ['rhino'];
+      state.seenUnlocks = v2.seenUnlocks || [];
+      state.mode = 'focus';
+      state.running = false;
+      state.paused = false;
+      state.remaining = state.focusMin * 60;
+      state.total = state.focusMin * 60;
+      localStorage.removeItem('focusForestV2');
+      save();
+      return;
+    }
+
+    // 3. Try migrating from V1 format
     const old = JSON.parse(localStorage.getItem('focusForest'));
     if (old) {
       const emojiMap = {'🌲':'fir','🌳':'oak','🎄':'fir','🌴':'cactus','🎋':'bamboo','🪻':'cherry'};
       state.focusMin = old.focusMin || 25;
       state.breakMin = old.breakMin || 5;
-      state.trees = (old.trees||[]).map(t => ({
-        type: emojiMap[t.emoji] || 'oak',
-        date: t.date, ts: t.ts, dead: false
+      state.entities = (old.trees||[]).map(t => ensureEntityPosition({
+        category: 'tree', type: emojiMap[t.emoji] || 'oak',
+        date: t.date, ts: t.ts, dead: false, failed: false
       }));
-      state.selectedTree = emojiMap[old.selectedTree] || 'oak';
+      state.selectedEntity = { category: 'tree', id: emojiMap[old.selectedTree] || 'oak' };
       state.history = old.history || {};
-      // Calculate totalFocusMinutes from history
       let totalMin = 0;
       for (const k in state.history) totalMin += state.history[k].minutes || 0;
       state.totalFocusMinutes = totalMin;
-      // Unlock trees based on total
       checkUnlocks(true);
       localStorage.removeItem('focusForest');
       save();
@@ -1618,6 +1682,43 @@ function today() {
   return new Date().toISOString().slice(0,10);
 }
 
+function genRandomPosition(category) {
+  // Generate random position inside the isometric diamond
+  // Diamond constraint: |x-50|/50 + |y-50|/50 <= 1
+  // Use rejection sampling with inset padding
+  const pad = category === 'animal' ? 14 : 12;
+  let posX, posY;
+  for (let i = 0; i < 20; i++) {
+    posX = pad + Math.random() * (100 - pad * 2);
+    posY = pad + Math.random() * (100 - pad * 2);
+    // Check if inside diamond (with padding)
+    const dx = Math.abs(posX - 50) / (50 - pad);
+    const dy = Math.abs(posY - 50) / (50 - pad);
+    if (dx + dy <= 1) break;
+  }
+  return { posX, posY };
+}
+
+function ensureEntityPosition(entity) {
+  const next = { ...entity };
+  if (typeof next.posX !== 'number' || typeof next.posY !== 'number') {
+    const p = genRandomPosition(next.category || 'tree');
+    next.posX = p.posX;
+    next.posY = p.posY;
+  }
+  // Clamp to diamond area
+  next.posX = Math.max(10, Math.min(90, next.posX));
+  next.posY = Math.max(12, Math.min(88, next.posY));
+  // Verify inside diamond, if not move toward center
+  const dx = Math.abs(next.posX - 50) / 40;
+  const dy = Math.abs(next.posY - 50) / 38;
+  if (dx + dy > 1) {
+    next.posX = next.posX * 0.7 + 50 * 0.3;
+    next.posY = next.posY * 0.7 + 50 * 0.3;
+  }
+  return next;
+}
+
 // ============================================================
 // GAMIFICATION
 // ============================================================
@@ -1626,38 +1727,91 @@ function checkUnlocks(silent) {
   TREE_TYPES.forEach(t => {
     if (state.totalFocusMinutes >= t.unlockMinutes && !state.unlockedTrees.includes(t.id)) {
       state.unlockedTrees.push(t.id);
-      newUnlocks.push(t);
+      newUnlocks.push({ ...t, category: 'tree' });
+    }
+  });
+  ANIMAL_TYPES.forEach(a => {
+    if (state.totalFocusMinutes >= a.unlockMinutes && !state.unlockedAnimals.includes(a.id)) {
+      state.unlockedAnimals.push(a.id);
+      newUnlocks.push({ ...a, category: 'animal' });
     }
   });
   if (!silent && newUnlocks.length > 0) {
-    newUnlocks.forEach(t => {
-      if (!state.seenUnlocks.includes(t.id)) {
-        showUnlockModal(t);
-        state.seenUnlocks.push(t.id);
+    newUnlocks.forEach(item => {
+      const unlockKey = item.category + '_' + item.id;
+      if (!state.seenUnlocks.includes(unlockKey)) {
+        showUnlockModal(item, item.category);
+        state.seenUnlocks.push(unlockKey);
       }
     });
     save();
   }
 }
 
+function isEntityUnlocked(category, id) {
+  if (category === 'tree') return state.unlockedTrees.includes(id);
+  if (category === 'animal') return state.unlockedAnimals.includes(id);
+  return false;
+}
+
+// Legacy compatibility wrappers
 function isTreeUnlocked(treeId) {
-  return state.unlockedTrees.includes(treeId);
+  return isEntityUnlocked('tree', treeId);
+}
+
+function getEntityDef(category, id) {
+  if (category === 'tree') return TREE_TYPES.find(t => t.id === id);
+  if (category === 'animal') return ANIMAL_TYPES.find(a => a.id === id);
+  return null;
 }
 
 function getTreeDef(treeId) {
-  return TREE_TYPES.find(t => t.id === treeId);
+  return getEntityDef('tree', treeId);
+}
+
+function normalizeAnimalState() {
+  const validAnimalIds = new Set(ANIMAL_TYPES.map(a => a.id));
+  state.unlockedAnimals = (state.unlockedAnimals || []).filter(id => validAnimalIds.has(id));
+  if (state.unlockedAnimals.length === 0) state.unlockedAnimals = ['rhino'];
+
+  if (state.selectedEntity.category === 'animal' && !validAnimalIds.has(state.selectedEntity.id)) {
+    state.selectedEntity = { category: 'animal', id: state.unlockedAnimals[0] };
+  }
+
+  let entitiesChanged = false;
+  state.entities = state.entities.map(entity => {
+    if ((entity.category || 'tree') !== 'animal') return entity;
+    if (validAnimalIds.has(entity.type)) return entity;
+    entitiesChanged = true;
+    return { ...entity, type: 'rhino' };
+  });
+
+  if (entitiesChanged) save();
+}
+
+function getEntitySvg(category, id, failed) {
+  if (category === 'tree') {
+    if (failed) return DEAD_TREE_SVG;
+    const def = getEntityDef('tree', id);
+    return def ? def.svg : TREE_TYPES[1].svg;
+  }
+  if (category === 'animal') {
+    if (failed) return ESCAPED_ANIMAL_SVG;
+    const def = getEntityDef('animal', id);
+    return def ? def.svg : ANIMAL_TYPES[0].svg;
+  }
+  return '';
 }
 
 function getTreeSvg(treeId, dead) {
-  if (dead) return DEAD_TREE_SVG;
-  const def = getTreeDef(treeId);
-  return def ? def.svg : TREE_TYPES[1].svg;
+  return getEntitySvg('tree', treeId, dead);
 }
 
 // ============================================================
 // TIMER
 // ============================================================
 let timerInterval = null;
+let animalRoamTimer = null;
 
 function toggleTimer() {
   if (state.running) {
@@ -1674,7 +1828,9 @@ function startTimer() {
   btn.textContent = '暂停';
   btn.className = 'btn btn-secondary';
   document.getElementById('timerSub').textContent = state.mode === 'focus' ? '正在专注中…' : '休息中…';
-  document.getElementById('btnReset').style.display = '';
+  const secondaryBtn = document.getElementById('btnReset');
+  secondaryBtn.style.display = '';
+  secondaryBtn.textContent = state.mode === 'break' ? '结束' : '重置';
   document.getElementById('seedSelector').style.pointerEvents = 'none';
   document.getElementById('seedSelector').style.opacity = '.5';
 
@@ -1704,12 +1860,45 @@ function pauseTimer() {
   btn.textContent = '继续';
   btn.className = 'btn btn-primary';
   document.getElementById('timerSub').textContent = '已暂停';
+  const secondaryBtn = document.getElementById('btnReset');
+  secondaryBtn.textContent = state.mode === 'break' ? '结束' : '重置';
+}
+
+function endBreakEarly() {
+  clearInterval(timerInterval);
+  state.running = false;
+  state.paused = false;
+  releaseWakeLock();
+
+  state.mode = 'focus';
+  state.remaining = state.focusMin * 60;
+  state.total = state.remaining;
+
+  const btn = document.getElementById('btnStart');
+  btn.textContent = '开始专注';
+  btn.className = 'btn btn-primary';
+  document.getElementById('timerSub').textContent = '休息已结束，点击开始专注';
+
+  document.getElementById('btnReset').style.display = 'none';
+  document.getElementById('seedSelector').style.pointerEvents = '';
+  document.getElementById('seedSelector').style.opacity = '';
+
+  updateTimerDisplay();
+  updateGrowingPlant();
+  updateModeUI();
+  showToast('休息已结束，进入专注准备状态');
+  save();
 }
 
 function resetTimer() {
-  // If running focus mode, offer abandon
+  // Focus mode running -> confirm abandon
   if (state.running && state.mode === 'focus') {
     openAbandonModal();
+    return;
+  }
+  // Break mode -> end break early (running or paused)
+  if ((state.running || state.paused) && state.mode === 'break') {
+    endBreakEarly();
     return;
   }
   doReset();
@@ -1751,11 +1940,18 @@ function onTimerEnd() {
   releaseWakeLock();
 
   if (state.mode === 'focus') {
-    plantTree(false);
-    showToast('专注完成！种下了一棵' + getTreeDef(state.selectedTree).name + '，休息一下吧 🌿');
+    completeSession(false);
+    const def = getEntityDef(state.selectedEntity.category, state.selectedEntity.id);
+    const entityName = def ? def.name : '伙伴';
+    if (state.selectedEntity.category === 'tree') {
+      showToast('专注完成！种下了一棵' + entityName + '，休息一下吧 🌿');
+      sendNotification('🌿 专注完成！', '种下了一棵' + entityName + '，休息一下吧');
+    } else {
+      showToast('专注完成！成功养育了一只' + entityName + '，休息一下吧 🐾');
+      sendNotification('🐾 专注完成！', '成功养育了一只' + entityName + '，休息一下吧');
+    }
     playSound();
     checkUnlocks(false);
-    sendNotification('🌿 专注完成！', '种下了一棵' + getTreeDef(state.selectedTree).name + '，休息一下吧');
 
     state.mode = 'break';
     state.remaining = state.breakMin * 60;
@@ -1789,26 +1985,50 @@ function onTimerEnd() {
 }
 
 // ============================================================
-// PLANT TREE
+// COMPLETE SESSION (replaces plantTree)
 // ============================================================
-function plantTree(dead) {
-  const tree = {
-    type: state.selectedTree,
+function completeSession(failed) {
+  const randomPos = genRandomPosition(state.selectedEntity.category);
+  const entity = {
+    category: state.selectedEntity.category,
+    type: state.selectedEntity.id,
     date: today(),
     ts: Date.now(),
-    dead: dead
+    dead: (state.selectedEntity.category === 'tree') ? failed : false,
+    failed: (state.selectedEntity.category === 'animal') ? failed : false,
+    posX: randomPos.posX,
+    posY: randomPos.posY
   };
-  state.trees.unshift(tree);
+  state.entities.unshift(entity);
 
   const d = today();
-  if (!state.history[d]) state.history[d] = { trees:0, minutes:0, deadTrees:0 };
-  if (dead) {
-    state.history[d].deadTrees++;
+  if (!state.history[d]) state.history[d] = { trees:0, minutes:0, deadTrees:0, animals:0, escapedAnimals:0 };
+
+  if (state.selectedEntity.category === 'tree') {
+    if (failed) {
+      state.history[d].deadTrees = (state.history[d].deadTrees || 0) + 1;
+    } else {
+      state.history[d].trees++;
+      state.history[d].minutes += state.focusMin;
+      state.totalFocusMinutes += state.focusMin;
+    }
   } else {
-    state.history[d].trees++;
-    state.history[d].minutes += state.focusMin;
-    state.totalFocusMinutes += state.focusMin;
+    if (failed) {
+      state.history[d].escapedAnimals = (state.history[d].escapedAnimals || 0) + 1;
+    } else {
+      state.history[d].animals = (state.history[d].animals || 0) + 1;
+      state.history[d].minutes += state.focusMin;
+      state.totalFocusMinutes += state.focusMin;
+    }
   }
+}
+
+// Legacy wrapper
+function plantTree(dead) {
+  const origEntity = state.selectedEntity;
+  state.selectedEntity = { category: 'tree', id: state.selectedEntity.id };
+  completeSession(dead);
+  state.selectedEntity = origEntity;
 }
 
 // ============================================================
@@ -1823,9 +2043,12 @@ function updateGrowingPlant() {
     return;
   }
 
+  const category = state.selectedEntity.category;
+  const entityId = state.selectedEntity.id;
+
   if (!state.running && !state.paused) {
-    // Idle - show selected tree preview
-    const def = getTreeDef(state.selectedTree);
+    // Idle - show selected entity preview
+    const def = getEntityDef(category, entityId);
     if (def) {
       el.innerHTML = def.svg.replace('viewBox="0 0 40 40"', 'viewBox="0 0 40 40" class="sway"');
     }
@@ -1835,25 +2058,42 @@ function updateGrowingPlant() {
   const progress = state.total > 0 ? 1 - (state.remaining / state.total) : 0;
 
   if (state.paused) {
-    // Show current stage but dimmed
     el.style.opacity = '0.6';
   } else {
     el.style.opacity = '1';
   }
 
   let stageSvg;
-  if (progress < 0.1) {
-    stageSvg = GROWING_STAGES.seed;
-  } else if (progress < 0.3) {
-    stageSvg = GROWING_STAGES.sprout;
-  } else if (progress < 0.6) {
-    stageSvg = GROWING_STAGES.small;
-  } else if (progress < 0.9) {
-    stageSvg = GROWING_STAGES.medium;
+  if (category === 'tree') {
+    if (progress < 0.1) {
+      stageSvg = GROWING_STAGES.seed;
+    } else if (progress < 0.3) {
+      stageSvg = GROWING_STAGES.sprout;
+    } else if (progress < 0.6) {
+      stageSvg = GROWING_STAGES.small;
+    } else if (progress < 0.9) {
+      stageSvg = GROWING_STAGES.medium;
+    } else {
+      const def = getEntityDef('tree', entityId);
+      stageSvg = def ? def.svg : GROWING_STAGES.medium;
+    }
   } else {
-    // Almost done - show the selected tree type
-    const def = getTreeDef(state.selectedTree);
-    stageSvg = def ? def.svg : GROWING_STAGES.medium;
+    // Animal type-specific growth profile (not all start from egg)
+    const entityDef = getEntityDef('animal', entityId);
+    const growthMode = entityDef && entityDef.growthMode ? entityDef.growthMode : 'default';
+    const profile = GROWING_STAGES_ANIMAL[entityId] || GROWING_STAGES_ANIMAL[growthMode] || GROWING_STAGES_ANIMAL.default;
+    if (progress < 0.2) {
+      stageSvg = profile[0];
+    } else if (progress < 0.45) {
+      stageSvg = profile[1];
+    } else if (progress < 0.75) {
+      stageSvg = profile[2];
+    } else if (progress < 0.92) {
+      stageSvg = profile[3];
+    } else {
+      const def = getEntityDef('animal', entityId);
+      stageSvg = def ? def.svg : profile[3];
+    }
   }
   el.innerHTML = stageSvg;
 }
@@ -1907,7 +2147,7 @@ function updateTimerDisplay() {
 
   // Title
   const modeStr = state.mode === 'focus' ? '专注' : '休息';
-  document.title = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')} - ${modeStr} | 专注森林`;
+  document.title = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')} - ${modeStr} | 专注丛林`;
 }
 
 function updateModeUI() {
@@ -1925,14 +2165,15 @@ function updateModeUI() {
     ring.className = 'ring-progress break';
   }
   if (!state.running && !state.paused) {
-    document.title = '专注森林 - Focus Forest';
+    document.title = '专注丛林 - Focus Jungle';
   }
 }
 
 function updateSessionInfo() {
   const d = today();
-  const h = state.history[d] || { trees:0, minutes:0 };
-  document.getElementById('sessionInfo').textContent = `今日已专注 ${h.trees} 次 · ${h.minutes} 分钟`;
+  const h = state.history[d] || { trees:0, minutes:0, animals:0 };
+  const totalSessions = (h.trees || 0) + (h.animals || 0);
+  document.getElementById('sessionInfo').textContent = `今日已专注 ${totalSessions} 次 · ${h.minutes || 0} 分钟`;
 }
 
 function onSettingChange() {
@@ -1966,21 +2207,36 @@ function switchTab(name, el) {
   if (el) el.classList.add('active');
   document.getElementById('page-' + name).classList.add('active');
 
+  if (name !== 'land') stopAnimalRoaming();
   if (name === 'land') renderLand();
   if (name === 'stats') renderStats();
 }
 
 // ============================================================
-// TREE SELECTOR MODAL
+// ENTITY SELECTOR MODAL
 // ============================================================
+let modalTab = 'tree'; // current tab in modal
+
 function openTreeModal() {
   if (state.running) return;
+  modalTab = state.selectedEntity.category;
+  renderEntityModal();
+  document.getElementById('treeModal').classList.add('show');
+}
+
+function renderEntityModal() {
   const grid = document.getElementById('treeGrid');
-  grid.innerHTML = TREE_TYPES.map(t => {
-    const unlocked = isTreeUnlocked(t.id);
-    const selected = state.selectedTree === t.id;
+  const items = modalTab === 'tree' ? TREE_TYPES : ANIMAL_TYPES;
+  const tabHtml = `<div style="display:flex;gap:4px;margin-bottom:12px;justify-content:center">
+    <button class="btn btn-sm ${modalTab==='tree'?'btn-primary':'btn-secondary'}" onclick="switchModalTab('tree')">🌳 树种</button>
+    <button class="btn btn-sm ${modalTab==='animal'?'btn-primary':'btn-secondary'}" onclick="switchModalTab('animal')">🐾 动物</button>
+  </div>`;
+
+  const cardsHtml = items.map(t => {
+    const unlocked = isEntityUnlocked(modalTab, t.id);
+    const selected = state.selectedEntity.category === modalTab && state.selectedEntity.id === t.id;
     return `<div class="tree-card ${selected?'selected':''} ${unlocked?'':'locked'}"
-      onclick="${unlocked ? `selectTreeType('${t.id}')` : ''}"
+      onclick="${unlocked ? `selectEntity('${modalTab}','${t.id}')` : ''}"
       ${!unlocked ? 'title="未解锁"' : ''}>
       ${!unlocked ? `<svg class="tree-card-lock" viewBox="0 0 16 16"><path d="M8 1a3 3 0 00-3 3v2H4a1 1 0 00-1 1v6a1 1 0 001 1h8a1 1 0 001-1V7a1 1 0 00-1-1h-1V4a3 3 0 00-3-3zm2 5H6V4a2 2 0 114 0v2z" fill="currentColor"/></svg>` : ''}
       <div class="tree-card-svg">${t.svg}</div>
@@ -1991,29 +2247,44 @@ function openTreeModal() {
       }
     </div>`;
   }).join('');
-  document.getElementById('treeModal').classList.add('show');
+
+  grid.innerHTML = tabHtml + cardsHtml;
+}
+
+function switchModalTab(tab) {
+  modalTab = tab;
+  renderEntityModal();
 }
 
 function closeTreeModal() {
   document.getElementById('treeModal').classList.remove('show');
 }
 
-function selectTreeType(id) {
-  if (!isTreeUnlocked(id)) return;
-  state.selectedTree = id;
+function selectEntity(category, id) {
+  if (!isEntityUnlocked(category, id)) return;
+  state.selectedEntity = { category, id };
   save();
   closeTreeModal();
   updateSeedSelector();
   updateGrowingPlant();
 }
 
+function selectTreeType(id) {
+  selectEntity('tree', id);
+}
+
 function updateSeedSelector() {
-  const def = getTreeDef(state.selectedTree);
+  const def = getEntityDef(state.selectedEntity.category, state.selectedEntity.id);
   if (def) {
     document.getElementById('selectedTreeName').textContent = def.name;
     document.getElementById('seedSelectorIcon').innerHTML = def.svg
       .replace('viewBox="0 0 40 40"', 'viewBox="0 0 40 40" width="28" height="28"')
       .replace(/<svg[^>]*>/, m => m);
+  }
+  // Update selector label
+  const labelEl = document.querySelector('.seed-selector-text');
+  if (labelEl) {
+    labelEl.textContent = state.selectedEntity.category === 'tree' ? '选择树种' : '选择动物';
   }
 }
 
@@ -2026,6 +2297,12 @@ document.getElementById('treeModal').addEventListener('click', function(e) {
 // ABANDON MODAL
 // ============================================================
 function openAbandonModal() {
+  // Dynamically update abandon modal text based on entity type
+  const isAnimal = state.selectedEntity.category === 'animal';
+  document.querySelector('.confirm-icon').textContent = isAnimal ? '🏃' : '🥀';
+  document.querySelector('.confirm-desc').textContent = isAnimal
+    ? '放弃后，这只小动物将会逃跑，留下空空的脚印作为警示。'
+    : '放弃后，这棵树将变成枯树留在你的土地上，作为警示。';
   document.getElementById('abandonModal').classList.add('show');
 }
 function closeAbandonModal() {
@@ -2036,8 +2313,13 @@ function confirmAbandon() {
   clearInterval(timerInterval);
   state.running = false;
   state.paused = false;
-  plantTree(true);
-  showToast('这棵树枯萎了…下次坚持住！🥀');
+  completeSession(true);
+
+  if (state.selectedEntity.category === 'animal') {
+    showToast('小动物逃跑了…下次坚持住！🏃');
+  } else {
+    showToast('这棵树枯萎了…下次坚持住！🥀');
+  }
   save();
 
   state.mode = 'focus';
@@ -2060,16 +2342,22 @@ function confirmAbandon() {
 // ============================================================
 // UNLOCK MODAL
 // ============================================================
-function showUnlockModal(treeDef) {
+function showUnlockModal(entityDef, category) {
   // Celebration vibration
   if (navigator.vibrate) {
     navigator.vibrate([100, 50, 100, 50, 200]);
   }
 
-  document.getElementById('unlockTreeSvg').innerHTML = treeDef.svg
+  // Update label based on category
+  const labelEl = document.querySelector('.unlock-label');
+  if (labelEl) {
+    labelEl.textContent = category === 'animal' ? '新 动 物 解 锁' : '新 树 种 解 锁';
+  }
+
+  document.getElementById('unlockTreeSvg').innerHTML = entityDef.svg
     .replace('viewBox="0 0 40 40"', 'viewBox="0 0 40 40" width="72" height="72"');
-  document.getElementById('unlockTreeName').textContent = treeDef.name;
-  document.getElementById('unlockTreeDesc').textContent = treeDef.desc;
+  document.getElementById('unlockTreeName').textContent = entityDef.name;
+  document.getElementById('unlockTreeDesc').textContent = entityDef.desc;
 
   // Create particles
   const particles = document.getElementById('unlockParticles');
@@ -2103,64 +2391,121 @@ function switchLandView(view, el) {
   document.getElementById('landMonth').style.display = view === 'month' ? 'block' : 'none';
   document.getElementById('landYear').style.display = view === 'year' ? 'block' : 'none';
 
+  if (view !== 'day') stopAnimalRoaming();
   if (view === 'day') renderDayView();
   if (view === 'month') renderMonthView();
   if (view === 'year') renderYearView();
 }
 
-// --- Day View (2.5D Isometric) ---
+function stopAnimalRoaming() {
+  if (animalRoamTimer) {
+    clearTimeout(animalRoamTimer);
+    animalRoamTimer = null;
+  }
+}
+
+function startAnimalRoaming() {
+  stopAnimalRoaming();
+  const dayView = document.getElementById('landDay');
+  if (!dayView || dayView.style.display === 'none') return;
+
+  const step = () => {
+    const roamingEls = Array.from(document.querySelectorAll('.land-cell.is-roaming[data-failed="0"]'));
+    if (roamingEls.length === 0) return;
+
+    let moved = false;
+    roamingEls.forEach(el => {
+      if (Math.random() < 0.35) return;
+      const curX = parseFloat(el.style.left || '50');
+      const curY = parseFloat(el.style.top || '50');
+      const dx = (Math.random() - 0.5) * 4.5;
+      const dy = (Math.random() - 0.5) * 3.8;
+      const nextX = Math.max(10, Math.min(90, curX + dx));
+      const nextY = Math.max(12, Math.min(88, curY + dy));
+      el.style.left = `${nextX.toFixed(2)}%`;
+      el.style.top = `${nextY.toFixed(2)}%`;
+
+      const ts = Number(el.dataset.entityTs || 0);
+      const idx = state.entities.findIndex(item => item.ts === ts);
+      if (idx >= 0) {
+        state.entities[idx].posX = nextX;
+        state.entities[idx].posY = nextY;
+        moved = true;
+      }
+    });
+
+    if (moved) save();
+    animalRoamTimer = setTimeout(step, 2000 + Math.random() * 2000);
+  };
+
+  animalRoamTimer = setTimeout(step, 1800 + Math.random() * 1200);
+}
+
+// --- Day View (Flat Grassland) ---
 function renderDayView() {
   const d = today();
-  const todayTrees = state.trees.filter(t => t.date === d);
+  const todayEntities = state.entities
+    .filter(t => t.date === d)
+    .map(e => ensureEntityPosition(e));
+
+  // Keep positions for legacy records
+  let updated = false;
+  state.entities = state.entities.map(e => {
+    if (e.date !== d) return e;
+    const next = ensureEntityPosition(e);
+    if (next.posX !== e.posX || next.posY !== e.posY) updated = true;
+    return next;
+  });
+  if (updated) save();
 
   // Date label
   const dateObj = new Date();
   const weekdays = ['日','一','二','三','四','五','六'];
-  document.getElementById('dayDate').textContent =
-    `${d.replace(/-/g,'.')}  星期${weekdays[dateObj.getDay()]}`;
+  document.getElementById('dayDate').textContent = `${d.replace(/-/g,'.')}  星期${weekdays[dateObj.getDay()]}`;
 
-  // Grid (6x6 = 36 cells) with isometric depth
+  // Flat grass random placement
   const grid = document.getElementById('landGrid');
   let html = '';
-  for (let i = 0; i < 36; i++) {
-    const row = Math.floor(i / 6);
-
-    if (i < todayTrees.length) {
-      const tree = todayTrees[i];
-      const treeName = tree.dead ? '枯树' : (getTreeDef(tree.type)?.name || '树');
-      const svgHtml = getTreeSvg(tree.type, tree.dead);
-      const swayClass = tree.dead ? '' : (i === 0 ? ' tree-pop' : ' tree-sway');
-      html += `<div class="land-cell has-tree ${tree.dead?'dead':''}" title="${treeName}">
-        <div class="tree-ground-shadow"></div>
-        <div class="tree-on-cell"><div class="${swayClass}">${svgHtml}</div></div>
-      </div>`;
-    } else {
-      // Empty cell with small grass accents
-      const dots = [];
-      const n = 2 + Math.floor(Math.random() * 3);
-      for (let g = 0; g < n; g++) {
-        const gx = 15 + Math.random() * 70;
-        const gy = 25 + Math.random() * 55;
-        dots.push(`<div class="cell-grass-dot" style="left:${gx}%;top:${gy}%"></div>`);
-      }
-      html += `<div class="land-cell empty">${dots.join('')}</div>`;
-    }
-  }
-  grid.innerHTML = html;
+  todayEntities.forEach((entity, i) => {
+    const isFailed = entity.dead || entity.failed;
+    const category = entity.category || 'tree';
+    const def = getEntityDef(category, entity.type);
+    const entityName = isFailed
+      ? (category === 'animal' ? '逃跑' : '枯萎')
+      : (def ? def.name : (category === 'animal' ? '动物' : '树'));
+    const svgHtml = getEntitySvg(category, entity.type, isFailed);
+    const swayClass = isFailed ? '' : (i === 0 ? 'tree-pop' : 'tree-sway');
+    const roamingClass = (!isFailed && category === 'animal') ? 'is-roaming' : '';
+    const posX = entity.posX.toFixed(2);
+    const posY = entity.posY.toFixed(2);
+    html += `<div class="land-cell ${category === 'animal' ? 'has-animal' : 'has-tree'} ${isFailed ? 'dead' : ''} ${roamingClass}"
+      data-entity-ts="${entity.ts}" data-category="${category}" data-failed="${isFailed ? '1' : '0'}"
+      style="left:${posX}%;top:${posY}%" title="${entityName}">
+      <div class="tree-ground-shadow"></div>
+      <div class="tree-on-cell"><div class="${swayClass}">${svgHtml}</div></div>
+    </div>`;
+  });
+  grid.innerHTML = '<div class="land-grid-soil-left"></div>' + html;
 
   // Summary
-  const alive = todayTrees.filter(t => !t.dead).length;
-  const dead = todayTrees.filter(t => t.dead).length;
-  const minutes = state.history[d]?.minutes || 0;
-  document.getElementById('daySummary').innerHTML =
-    `今日花园：已种 <strong>${alive}</strong> 棵树${dead > 0 ? `，<strong>${dead}</strong> 棵枯萎` : ''} · 专注 <strong>${minutes}</strong> 分钟`;
+  const hist = state.history[d] || {};
+  const aliveT = hist.trees || 0;
+  const deadT = hist.deadTrees || 0;
+  const aliveA = hist.animals || 0;
+  const escapedA = hist.escapedAnimals || 0;
+  const minutes = hist.minutes || 0;
+  let summaryParts = [];
+  if (aliveT > 0 || deadT > 0) summaryParts.push(`<strong>${aliveT}</strong> 棵树${deadT > 0 ? `（${deadT} 枯萎）` : ''}`);
+  if (aliveA > 0 || escapedA > 0) summaryParts.push(`<strong>${aliveA}</strong> 只动物${escapedA > 0 ? `（${escapedA} 逃跑）` : ''}`);
+  document.getElementById('daySummary').innerHTML = `今日丛林：${summaryParts.length > 0 ? summaryParts.join('，') : '等待你的专注'} · 专注 <strong>${minutes}</strong> 分钟`;
 
-  // Generate ambient floating particles
+  // Ambient particles
+  const totalAlive = aliveT + aliveA;
   const particles = document.getElementById('landParticles');
-  if (particles && alive > 0) {
+  if (particles && totalAlive > 0) {
     const colors = ['#a1d494','#8cb870','#f5e6b8','#c8e6c0'];
     let phtml = '';
-    const count = Math.min(alive * 2, 12);
+    const count = Math.min(totalAlive * 2, 12);
     for (let p = 0; p < count; p++) {
       const x = 5 + Math.random() * 90;
       const y = 5 + Math.random() * 90;
@@ -2179,108 +2524,96 @@ function renderDayView() {
   } else if (particles) {
     particles.innerHTML = '';
   }
+
+  startAnimalRoaming();
 }
 
-// --- Month View (2.5D Land) ---
+// --- Month View (Isometric Land) ---
 function renderMonthView() {
   const year = viewYear;
   const month = viewMonth;
 
   document.getElementById('monthLabel').textContent = `${year}年${month+1}月`;
 
-  // Weekday headers
-  const weekdays = ['一','二','三','四','五','六','日'];
-  document.getElementById('monthWeekdays').innerHTML =
-    weekdays.map(w => `<div class="weekday-label">${w}</div>`).join('');
-
-  // Calculate grid
-  const firstDay = new Date(year, month, 1);
-  let startDow = firstDay.getDay(); // 0=Sun
-  startDow = startDow === 0 ? 6 : startDow - 1; // Convert to Mon=0
+  // Gather all entities for this month
   const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const monthEntities = [];
+  let monthTrees = 0, monthAnimals = 0, monthMin = 0, monthDays = 0;
+  let monthDead = 0, monthEscaped = 0;
 
-  const todayStr = today();
-  let html = '';
-  // Empty cells before first day
-  for (let i = 0; i < startDow; i++) {
-    html += `<div class="month-cell empty-cell"></div>`;
-  }
   for (let d = 1; d <= daysInMonth; d++) {
     const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const hist = state.history[dateStr];
-    const treeCount = hist ? hist.trees || 0 : 0;
-    const deadCount = hist ? hist.deadTrees || 0 : 0;
-    const isToday = dateStr === todayStr;
-
-    // Get actual trees for this date to show real tree types
-    const dayTrees = state.trees.filter(t => t.date === dateStr);
-
-    if (treeCount > 0 || deadCount > 0) {
-      // Determine which tree SVGs to show (up to 3 for visual density)
-      const aliveTrees = dayTrees.filter(t => !t.dead);
-      const deadTrees = dayTrees.filter(t => t.dead);
-      let treeHtml = '';
-
-      if (aliveTrees.length > 0) {
-        // Show up to 2 alive trees + 1 dead tree indicator
-        const showCount = Math.min(aliveTrees.length, 2);
-        for (let ti = 0; ti < showCount; ti++) {
-          const svgHtml = getTreeSvg(aliveTrees[ti].type, false);
-          const offset = ti === 0 ? 'left:5%;width:55%' : 'right:5%;width:45%';
-          treeHtml += `<div class="month-tree-on-cell" style="${offset}"><div class="tree-sway">${svgHtml}</div></div>`;
-        }
-        if (aliveTrees.length > 2) {
-          // Extra trees indicator - denser green
-          treeHtml += `<div style="position:absolute;bottom:2px;right:2px;font-size:7px;color:var(--primary);font-weight:700;z-index:3;background:rgba(255,255,255,0.7);border-radius:3px;padding:0 2px">+${aliveTrees.length - 2}</div>`;
-        }
-      }
-      if (deadCount > 0) {
-        const deadSvg = getTreeSvg('oak', true);
-        treeHtml += `<div class="month-tree-on-cell" style="right:0;width:30%;opacity:.7"><div>${deadSvg}</div></div>`;
-      }
-
-      // Ground shadow for trees
-      const shadowHtml = treeCount > 0 ? `<div style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);width:20px;height:5px;background:rgba(0,0,0,0.05);border-radius:50%;filter:blur(1px);z-index:1"></div>` : '';
-
-      const cellClass = deadCount > 0 && treeCount === 0 ? 'dead-cell' : 'has-trees';
-      html += `<div class="month-cell ${cellClass} ${isToday?'today':''}" title="${dateStr}: ${treeCount}棵树${deadCount > 0 ? `，${deadCount}棵枯萎` : ''}">
-        <span class="cell-date">${d}</span>
-        ${shadowHtml}
-        ${treeHtml}
-      </div>`;
-    } else {
-      // Empty cell with small grass
-      const grassDots = [];
-      const n = 1 + Math.floor(Math.random() * 2);
-      for (let g = 0; g < n; g++) {
-        const gx = 20 + Math.random() * 60;
-        const gy = 35 + Math.random() * 40;
-        grassDots.push(`<div class="cell-grass-mini" style="left:${gx}%;top:${gy}%"></div>`);
-      }
-      html += `<div class="month-cell ${isToday?'today':''}">
-        <span class="cell-date">${d}</span>
-        ${grassDots.join('')}
-      </div>`;
+    if (hist) {
+      monthTrees += hist.trees || 0;
+      monthAnimals += hist.animals || 0;
+      monthMin += hist.minutes || 0;
+      monthDead += hist.deadTrees || 0;
+      monthEscaped += hist.escapedAnimals || 0;
+      if ((hist.trees || 0) + (hist.animals || 0) > 0) monthDays++;
     }
+    const dayEnts = state.entities.filter(t => t.date === dateStr);
+    dayEnts.forEach(e => monthEntities.push(e));
   }
-  document.getElementById('monthGrid').innerHTML = html;
+
+  // Compute entity size based on count
+  const totalCount = monthEntities.length;
+  let entitySize;
+  if (totalCount <= 8) entitySize = 36;
+  else if (totalCount <= 15) entitySize = 28;
+  else if (totalCount <= 30) entitySize = 22;
+  else if (totalCount <= 50) entitySize = 16;
+  else entitySize = 12;
+
+  // Generate positions for entities inside the diamond
+  const grid = document.getElementById('monthGrid');
+  let html = '<div class="month-land-soil-left"></div>';
+
+  // Use seeded positions based on entity timestamp for consistency
+  monthEntities.forEach((entity, i) => {
+    const isFailed = entity.dead || entity.failed;
+    const category = entity.category || 'tree';
+    const svgHtml = getEntitySvg(category, entity.type, isFailed);
+    const failedClass = isFailed ? 'dead-entity' : '';
+
+    // Generate position inside diamond using entity's timestamp as seed
+    const seed = (entity.ts || i * 137) % 10000;
+    const pos = getSeededDiamondPosition(seed, i, totalCount);
+
+    html += `<div class="month-entity ${failedClass}" style="left:${pos.x}%;top:${pos.y}%;width:${entitySize}px;height:${entitySize}px;z-index:${Math.round(pos.y)}">${svgHtml}</div>`;
+  });
+
+  grid.innerHTML = html;
 
   // Month stats
-  let monthTrees = 0, monthMin = 0, monthDays = 0;
-  for (let d = 1; d <= daysInMonth; d++) {
-    const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const hist = state.history[dateStr];
-    if (hist && hist.trees > 0) {
-      monthTrees += hist.trees;
-      monthMin += hist.minutes || 0;
-      monthDays++;
-    }
-  }
   document.getElementById('monthStats').innerHTML = `
     <div class="month-stat"><div class="month-stat-val">${monthTrees}</div><div class="month-stat-label">棵树</div></div>
+    <div class="month-stat"><div class="month-stat-val">${monthAnimals}</div><div class="month-stat-label">只动物</div></div>
     <div class="month-stat"><div class="month-stat-val">${monthMin}</div><div class="month-stat-label">分钟</div></div>
     <div class="month-stat"><div class="month-stat-val">${monthDays}</div><div class="month-stat-label">天</div></div>
   `;
+}
+
+// Generate a position inside a diamond using a seed for consistency
+function getSeededDiamondPosition(seed, index, total) {
+  // Use golden ratio distribution for even spacing
+  const golden = 0.618033988749895;
+  const angle = ((index * golden) % 1) * Math.PI * 2;
+  const r = 0.3 + ((seed % 100) / 100) * 0.35; // radius 0.3-0.65
+
+  let x = 50 + Math.cos(angle) * r * 40;
+  let y = 50 + Math.sin(angle) * r * 40;
+
+  // Ensure inside diamond: |x-50|/45 + |y-50|/45 <= 1
+  const dx = Math.abs(x - 50) / 42;
+  const dy = Math.abs(y - 50) / 42;
+  if (dx + dy > 1) {
+    const scale = 0.9 / (dx + dy);
+    x = 50 + (x - 50) * scale;
+    y = 50 + (y - 50) * scale;
+  }
+
+  return { x: x.toFixed(1), y: y.toFixed(1) };
 }
 
 function changeMonth(delta) {
@@ -2290,86 +2623,67 @@ function changeMonth(delta) {
   renderMonthView();
 }
 
-// --- Year View (2.5D Land) ---
+// --- Year View (Isometric Land) ---
 function renderYearView() {
   const year = new Date().getFullYear();
-  document.getElementById('yearLabel').textContent = `${year} 年度生态圈`;
+  document.getElementById('yearLabel').textContent = `${year} 年度丛林`;
 
-  let yearTrees = 0, yearMin = 0, yearDays = 0;
+  // Gather all entities for this year
+  const yearEntities = [];
+  let yearTrees = 0, yearAnimals = 0, yearMin = 0, yearDays = 0;
+
   for (const k in state.history) {
     if (k.startsWith(year.toString())) {
       yearTrees += state.history[k].trees || 0;
+      yearAnimals += state.history[k].animals || 0;
       yearMin += state.history[k].minutes || 0;
-      if (state.history[k].trees > 0) yearDays++;
+      if ((state.history[k].trees || 0) + (state.history[k].animals || 0) > 0) yearDays++;
     }
   }
 
-  // Deserts saved (every 100 trees)
-  const deserts = Math.floor(yearTrees / 100);
+  // Get all entities for this year
+  const yearPrefix = year.toString();
+  state.entities.forEach(e => {
+    if (e.date && e.date.startsWith(yearPrefix)) {
+      yearEntities.push(e);
+    }
+  });
 
-  document.getElementById('yearHero').innerHTML = `
-    <div class="year-hero-number">${yearTrees}</div>
-    <div class="year-hero-text">
-      ${year}年，你共种下了 <strong>${yearTrees}</strong> 棵树<br>
-      累计专注 <strong>${yearMin}</strong> 分钟<br>
-      ${deserts > 0 ? `拯救了 <strong>${deserts}</strong> 片荒漠 🏜️→🌳` : '坚持专注，拯救荒漠！'}
-    </div>
+  // Compute entity size based on count (year has more entities, so smaller)
+  const totalCount = yearEntities.length;
+  let entitySize;
+  if (totalCount <= 12) entitySize = 30;
+  else if (totalCount <= 30) entitySize = 22;
+  else if (totalCount <= 60) entitySize = 16;
+  else if (totalCount <= 120) entitySize = 12;
+  else if (totalCount <= 200) entitySize = 9;
+  else entitySize = 7;
+
+  // Render entities on isometric land
+  const grid = document.getElementById('yearGrid');
+  let html = '<div class="year-land-soil-left"></div>';
+
+  yearEntities.forEach((entity, i) => {
+    const isFailed = entity.dead || entity.failed;
+    const category = entity.category || 'tree';
+    const svgHtml = getEntitySvg(category, entity.type, isFailed);
+    const failedClass = isFailed ? 'dead-entity' : '';
+
+    const seed = (entity.ts || i * 97) % 10000;
+    const pos = getSeededDiamondPosition(seed, i, totalCount);
+
+    html += `<div class="year-entity ${failedClass}" style="left:${pos.x}%;top:${pos.y}%;width:${entitySize}px;height:${entitySize}px;z-index:${Math.round(parseFloat(pos.y))}">${svgHtml}</div>`;
+  });
+
+  grid.innerHTML = html;
+
+  // Year stats
+  document.getElementById('yearStats').innerHTML = `
+    <div class="year-stat"><div class="year-stat-val">${yearTrees}</div><div class="year-stat-label">棵树</div></div>
+    <div class="year-stat"><div class="year-stat-val">${yearAnimals}</div><div class="year-stat-label">只动物</div></div>
+    <div class="year-stat"><div class="year-stat-val">${yearMin}</div><div class="year-stat-label">分钟</div></div>
+    <div class="year-stat"><div class="year-stat-val">${yearDays}</div><div class="year-stat-label">天</div></div>
   `;
-
-  // 12 month cards with mini 2.5D lands
-  let html = '';
-  for (let m = 0; m < 12; m++) {
-    let mTrees = 0, mMin = 0;
-    const daysInMonth = new Date(year, m + 1, 0).getDate();
-    const firstDay = new Date(year, m, 1);
-    let startDow = firstDay.getDay();
-    startDow = startDow === 0 ? 6 : startDow - 1;
-
-    // Build mini 7x5 grid for this month
-    let miniGridHtml = '';
-    // Empty cells before first day
-    for (let i = 0; i < startDow; i++) {
-      miniGridHtml += `<div class="year-cell empty-year"></div>`;
-    }
-    for (let d = 1; d <= daysInMonth; d++) {
-      const dateStr = `${year}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-      const hist = state.history[dateStr];
-      const tc = hist ? hist.trees || 0 : 0;
-      if (hist) { mTrees += hist.trees || 0; mMin += hist.minutes || 0; }
-
-      let cellClass = '';
-      let dotHtml = '';
-      if (tc >= 4) {
-        cellClass = 'has-tree-full';
-        // Show a tiny tree dot
-        dotHtml = `<div class="yt-dot"><svg viewBox="0 0 10 14"><path d="M5 0L3 5L7 5Z" fill="#2d8a3e"/><rect x="4" y="5" width="2" height="4" fill="#8B6914"/></svg></div>`;
-      } else if (tc >= 2) {
-        cellClass = 'has-tree-heavy';
-        dotHtml = `<div class="yt-dot"><svg viewBox="0 0 10 14"><path d="M5 2L3 6L7 6Z" fill="#3a9e4f"/><rect x="4" y="6" width="2" height="3" fill="#8B6914"/></svg></div>`;
-      } else if (tc >= 1) {
-        cellClass = 'has-tree';
-        dotHtml = `<div class="yt-dot"><svg viewBox="0 0 10 14"><circle cx="5" cy="6" r="2.5" fill="#4ab85f"/><rect x="4.5" y="8" width="1" height="2" fill="#5a8c3f"/></svg></div>`;
-      }
-      miniGridHtml += `<div class="year-cell ${cellClass}">${dotHtml}</div>`;
-    }
-    // Fill remaining cells to complete the grid
-    const totalCells = startDow + daysInMonth;
-    const rows = Math.ceil(totalCells / 7);
-    const remaining = rows * 7 - totalCells;
-    for (let i = 0; i < remaining; i++) {
-      miniGridHtml += `<div class="year-cell empty-year"></div>`;
-    }
-
-    html += `<div class="year-month-card">
-      <div class="year-month-name">${m+1}月</div>
-      <div class="year-month-land">
-        <div class="year-month-land-grid">${miniGridHtml}</div>
-      </div>
-      <div class="year-month-trees">${mTrees}</div>
-      <div class="year-month-min">${mMin}分钟</div>
-    </div>`;
-  }
-  document.getElementById('yearMonthsGrid').innerHTML = html;
 }
 
 function renderLand() {
@@ -2383,40 +2697,48 @@ function renderLand() {
 // ============================================================
 function renderStats() {
   const d = today();
-  const h = state.history[d] || { trees:0, minutes:0, deadTrees:0 };
+  const h = state.history[d] || { trees:0, minutes:0, deadTrees:0, animals:0, escapedAnimals:0 };
 
-  // Streak
+  // Streak - counts days with any successful session
   let streak = 0;
   let check = new Date();
   while (true) {
     const key = check.toISOString().slice(0,10);
-    if (state.history[key] && state.history[key].trees > 0) {
+    const dayHist = state.history[key];
+    if (dayHist && ((dayHist.trees || 0) + (dayHist.animals || 0)) > 0) {
       streak++;
       check.setDate(check.getDate() - 1);
     } else break;
   }
 
   // Totals
-  let totalTrees = 0, totalMin = 0, totalDead = 0;
+  let totalTrees = 0, totalAnimals = 0, totalMin = 0, totalDead = 0, totalEscaped = 0;
   for (const k in state.history) {
     totalTrees += state.history[k].trees || 0;
+    totalAnimals += state.history[k].animals || 0;
     totalMin += state.history[k].minutes || 0;
     totalDead += state.history[k].deadTrees || 0;
+    totalEscaped += state.history[k].escapedAnimals || 0;
   }
 
   document.getElementById('statsTodayLabel').textContent = `今天 · ${d.slice(5).replace('-','/')}`;
-  document.getElementById('statTodayTrees').textContent = h.trees;
-  document.getElementById('statTodayMin').textContent = h.minutes;
+  document.getElementById('statTodayTrees').textContent = (h.trees || 0) + (h.animals || 0);
+  document.getElementById('statTodayMin').textContent = h.minutes || 0;
   document.getElementById('statStreak').textContent = streak;
   document.getElementById('statTotalTrees').textContent = totalTrees;
   document.getElementById('statTotalMin').textContent = totalMin;
-  document.getElementById('statDeadTrees').textContent = totalDead;
-  document.getElementById('statUnlocked').textContent = state.unlockedTrees.length + '/' + TREE_TYPES.length;
+  document.getElementById('statDeadTrees').textContent = totalDead + totalEscaped;
+  document.getElementById('statUnlocked').textContent =
+    (state.unlockedTrees.length + state.unlockedAnimals.length) + '/' + (TREE_TYPES.length + ANIMAL_TYPES.length);
 
-  // Achievements grid
+  // Update stat labels to reflect animals
+  const totalAnimalsEl = document.getElementById('statTotalAnimals');
+  if (totalAnimalsEl) totalAnimalsEl.textContent = totalAnimals;
+
+  // Achievements grid - trees + animals
   const grid = document.getElementById('achievementsGrid');
-  grid.innerHTML = TREE_TYPES.map(t => {
-    const unlocked = isTreeUnlocked(t.id);
+  const treeCards = TREE_TYPES.map(t => {
+    const unlocked = isEntityUnlocked('tree', t.id);
     return `<div class="achievement-card ${unlocked?'unlocked':'locked'}">
       <div class="achievement-icon">${t.svg.replace('viewBox="0 0 40 40"','viewBox="0 0 40 40" width="32" height="32"')}</div>
       <div class="achievement-info">
@@ -2429,6 +2751,28 @@ function renderStats() {
       }</div>
     </div>`;
   }).join('');
+
+  const animalCards = ANIMAL_TYPES.map(a => {
+    const unlocked = isEntityUnlocked('animal', a.id);
+    return `<div class="achievement-card ${unlocked?'unlocked':'locked'}">
+      <div class="achievement-icon">${a.svg.replace('viewBox="0 0 40 40"','viewBox="0 0 40 40" width="32" height="32"')}</div>
+      <div class="achievement-info">
+        <div class="achievement-name">${a.name}</div>
+        <div class="achievement-desc">${unlocked ? a.desc : `累计专注 ${a.unlockMinutes} 分钟解锁`}</div>
+      </div>
+      <div>${unlocked
+        ? '<span class="achievement-check">✓</span>'
+        : '<span class="achievement-lock">🔒</span>'
+      }</div>
+    </div>`;
+  }).join('');
+
+  grid.innerHTML = `
+    <div style="grid-column:1/-1;font-size:13px;font-weight:600;color:var(--on-surface);margin:8px 0 4px">🌿 树种图鉴</div>
+    ${treeCards}
+    <div style="grid-column:1/-1;font-size:13px;font-weight:600;color:var(--on-surface);margin:12px 0 4px">🐾 动物图鉴</div>
+    ${animalCards}
+  `;
 }
 
 // ============================================================
@@ -2445,13 +2789,15 @@ function showToast(msg) {
 // RESET DATA
 // ============================================================
 function confirmResetData() {
-  if (confirm('确定要清除所有数据吗？这将删除你的所有树木和统计记录。')) {
-    state.trees = [];
+  if (confirm('确定要清除所有数据吗？这将删除你的所有树木、动物和统计记录。')) {
+    state.entities = [];
     state.history = {};
     state.totalFocusMinutes = 0;
     state.unlockedTrees = ['grass','oak'];
+    state.unlockedAnimals = ['rhino'];
     state.seenUnlocks = [];
-    state.selectedTree = 'oak';
+    state.selectedEntity = { category: 'tree', id: 'oak' };
+    localStorage.removeItem('focusJungleV3');
     localStorage.removeItem('focusForestV2');
     save();
     renderStats();
@@ -2506,7 +2852,7 @@ function sendNotification(title, body) {
         body: body,
         icon: '/icon-192.png',
         badge: '/icon-192.png',
-        tag: 'focus-forest-timer'
+        tag: 'focus-jungle-timer'
       });
     } catch (e) { /* notification failed silently */ }
   }
@@ -2516,6 +2862,7 @@ function sendNotification(title, body) {
 // INIT
 // ============================================================
 load();
+normalizeAnimalState();
 document.getElementById('focusMin').value = state.focusMin;
 document.getElementById('breakMin').value = state.breakMin;
 state.remaining = state.focusMin * 60;
@@ -2542,7 +2889,7 @@ updateTimerDisplay = function() {
     const s = state.remaining % 60;
     const modeStr = state.mode === 'focus' ? '专注' : '休息';
     window.electronAPI.updateTrayTitle(
-      `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')} ${modeStr} | 专注森林`
+      `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')} ${modeStr} | 专注丛林`
     );
   }
 };
@@ -2587,7 +2934,7 @@ document.getElementById('installBtn')?.addEventListener('click', async () => {
     
     if (outcome === 'accepted') {
       console.log('PWA installed');
-      showToast('🎉 安装成功！专注森林已添加到主屏幕');
+      showToast('🎉 安装成功！专注丛林已添加到主屏幕');
     } else {
       console.log('PWA install dismissed');
     }

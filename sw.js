@@ -1,5 +1,5 @@
-// Service Worker - 专注森林 PWA 离线缓存 v3
-const CACHE_NAME = 'focus-forest-v3';
+// Service Worker - 专注丛林 PWA 离线缓存 v4
+const CACHE_NAME = 'focus-jungle-v4';
 
 const ASSETS = [
   './',
